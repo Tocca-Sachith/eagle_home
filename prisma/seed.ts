@@ -121,7 +121,7 @@ async function main() {
   const customers = await Promise.all([
     prisma.customer.create({
       data: {
-        name: 'James Wilson',
+        fullName: 'James Wilson',
         email: 'james.wilson@example.com',
         phone: '+1 (555) 234-5678',
         country: 'United States',
@@ -129,7 +129,7 @@ async function main() {
     }),
     prisma.customer.create({
       data: {
-        name: 'Sophie Taylor',
+        fullName: 'Sophie Taylor',
         email: 'sophie.taylor@example.uk',
         phone: '+44 20 7234 5678',
         country: 'United Kingdom',
@@ -137,7 +137,7 @@ async function main() {
     }),
     prisma.customer.create({
       data: {
-        name: 'Hiroshi Tanaka',
+        fullName: 'Hiroshi Tanaka',
         email: 'h.tanaka@example.jp',
         phone: '+81 90 1234 5678',
         country: 'Japan',
@@ -147,57 +147,66 @@ async function main() {
 
   console.log(`✅ Created ${customers.length} customers`)
 
-  // Seed Projects
+    // Seed Projects
   console.log('🏗️  Seeding projects...')
   const projects = await Promise.all([
     prisma.project.create({
       data: {
-        name: 'Modern Villa - Coastal Paradise',
-        status: 'Completed',
+        title: 'Modern Villa - Coastal Paradise',
+        projectType: 'BUILD',
+        status: 'COMPLETED',
         location: 'Seaside District',
         startDate: new Date('2023-06-01'),
-        endDate: new Date('2024-03-15'),
+        endDatePlanned: new Date('2024-03-15'),
+        budgetTotal: '950000.00',
       },
     }),
     prisma.project.create({
       data: {
-        name: 'Urban Townhouse Renovation',
-        status: 'Completed',
+        title: 'Urban Townhouse Renovation',
+        projectType: 'RENOVATION',
+        status: 'COMPLETED',
         location: 'Downtown Historic District',
         startDate: new Date('2023-09-01'),
-        endDate: new Date('2024-01-30'),
+        endDatePlanned: new Date('2024-01-30'),
+        budgetTotal: '320000.00',
       },
     }),
     prisma.project.create({
       data: {
-        name: 'Executive Residence',
-        status: 'In Progress',
+        title: 'Executive Residence',
+        projectType: 'BUILD',
+        status: 'CONSTRUCTION',
         location: 'Premium Heights',
         startDate: new Date('2024-01-15'),
-        endDate: new Date('2024-08-30'),
+        endDatePlanned: new Date('2024-08-30'),
+        budgetTotal: '1200000.00',
       },
     }),
     prisma.project.create({
       data: {
-        name: 'Family Home Construction',
-        status: 'Planning',
+        title: 'Family Home Construction',
+        projectType: 'BUILD',
+        status: 'PLANNING',
         location: 'Suburban Community',
         startDate: new Date('2024-04-01'),
+        budgetTotal: '450000.00',
       },
     }),
     prisma.project.create({
       data: {
-        name: 'Beachfront Villa',
-        status: 'In Progress',
+        title: 'Beachfront Villa',
+        projectType: 'BUILD',
+        status: 'CONSTRUCTION',
         location: 'Coastal Area',
         startDate: new Date('2024-02-01'),
-        endDate: new Date('2024-10-15'),
+        endDatePlanned: new Date('2024-10-15'),
+        budgetTotal: '1100000.00',
       },
     }),
   ])
 
   console.log(`✅ Created ${projects.length} projects`)
-
   console.log('🎉 Seed completed successfully!')
 }
 
