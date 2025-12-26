@@ -1,6 +1,6 @@
 # Eagle Home & Construction
 
-A professional construction company website with an admin dashboard for managing customer inquiries. Built with Next.js, TypeScript, Tailwind CSS, and Prisma with MySQL.
+A professional construction company website with an admin dashboard for managing customer inquiries. Built with Next.js, TypeScript, Tailwind CSS, and Prisma with SQLite (dev) / MySQL (production).
 
 ## Features
 
@@ -10,22 +10,33 @@ A professional construction company website with an admin dashboard for managing
 - **Projects**: Showcase of completed projects
 - **Process**: Step-by-step explanation of the construction process
 - **Contact**: Inquiry form for potential clients
+- **Multi-language**: English and Sinhala support
 
 ### Admin Dashboard
 - **Dashboard**: Overview of business metrics
 - **Inquiries**: View and manage customer inquiries from the contact form
+- **User Management**: Complete CRUD operations for users (add, edit, delete, password reset)
 - **Customers**: Customer database (placeholder)
 - **Projects**: Project management (placeholder)
 - **Finance**: Financial tracking (placeholder)
 - **Reports**: Business analytics (placeholder)
+
+### Authentication & Security
+- **Login System**: Secure authentication with NextAuth.js
+- **Password Hashing**: bcryptjs for secure password storage
+- **Session Management**: JWT-based sessions
+- **Role-based Access**: ADMIN and USER roles
+- **Protected Routes**: Admin dashboard requires authentication
 
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS v4
-- **Database**: MySQL
+- **Database**: SQLite (dev) / MySQL (production)
 - **ORM**: Prisma v6
+- **Authentication**: NextAuth.js v4
+- **Password Hashing**: bcryptjs
 - **Deployment**: Ready for Vercel or any Node.js hosting
 
 ## Getting Started
@@ -33,10 +44,39 @@ A professional construction company website with an admin dashboard for managing
 ### Prerequisites
 
 - Node.js 20+ installed
-- MySQL database (local or remote)
 - npm or yarn package manager
+- (Optional) MySQL database for production
 
-### Installation
+### Quick Setup (Recommended)
+
+#### For Windows:
+
+Double-click the setup script:
+
+```bash
+setup-db.bat
+```
+
+Or in PowerShell:
+
+```powershell
+.\setup-db.bat
+```
+
+#### For macOS/Linux:
+
+```bash
+./setup-db.sh
+```
+
+This will automatically:
+- ✅ Install dependencies
+- ✅ Generate Prisma Client
+- ✅ Set up the database
+- ✅ Run migrations
+- ✅ Seed sample data (including admin user)
+
+### Manual Installation
 
 1. **Clone the repository and install dependencies:**
 
@@ -46,38 +86,29 @@ npm install
 
 2. **Set up your environment variables:**
 
-Create a `.env` file in the root directory (copy from `.env.example`):
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and add your MySQL connection string:
+Create a `.env` file in the root directory:
 
 ```env
-DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE"
+# SQLite (Development - Default)
+DATABASE_URL="file:./dev.db"
 
-# Example for local MySQL:
-# DATABASE_URL="mysql://root:password@localhost:3306/eagle_construction"
+# Or MySQL (Production)
+# DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE"
+
+# NextAuth Configuration
+NEXTAUTH_SECRET="your-secret-key-change-this-in-production"
+NEXTAUTH_URL="http://localhost:3000"
 ```
 
-3. **Generate Prisma Client and run database migrations:**
+3. **Generate Prisma Client and set up database:**
 
 ```bash
 # Generate Prisma Client
 npx prisma generate
 
-# Push schema to database (development)
-npm run db:push
-
-# Or create migration (production)
-npx prisma migrate dev --name init
-
-# Seed sample data
-npm run db:seed
+# Run migrations and seed data
+npx prisma migrate reset --force
 ```
-
-**Note:** See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for detailed database setup instructions.
 
 4. **Start the development server:**
 
@@ -85,13 +116,36 @@ npm run db:seed
 npm run dev
 ```
 
-5. **Open your browser:**
+5. **Login to admin dashboard:**
 
-Visit [http://localhost:3000](http://localhost:3000) to see the website.
+Visit [http://localhost:3000/login](http://localhost:3000/login)
 
-Visit [http://localhost:3000/admin](http://localhost:3000/admin) to access the admin dashboard.
+```
+Email: admin@eaglehome.com
+Password: admin123
+```
+
+### Troubleshooting
+
+If you encounter any seed errors, see:
+- **QUICK_SETUP.md** - Quick setup guide
+- **SEED_TROUBLESHOOTING.md** - Detailed troubleshooting
+- **USAGE_GUIDE.md** - Complete usage guide
 
 ## Database Schema
+
+### User Model
+Stores user accounts for admin dashboard access:
+- `id` - Unique identifier (CUID)
+- `email` - Email address (unique, required)
+- `name` - User's name (required)
+- `password` - Hashed password (bcrypt)
+- `role` - USER or ADMIN (default: USER)
+- `isActive` - Account status (default: true)
+- `lastLogin` - Last login timestamp (optional)
+- `createdAt` - Account creation timestamp
+- `updatedAt` - Last update timestamp
+- `createdBy` - ID of user who created this account (optional)
 
 ### Inquiry Model
 Stores customer inquiries from the contact form:
@@ -115,7 +169,77 @@ For future project tracking functionality.
 
 ## API Routes
 
-### POST /api/inquiries
+### Authentication
+
+#### POST /api/auth/[...nextauth]
+NextAuth.js authentication endpoints:
+- `/api/auth/signin` - Sign in
+- `/api/auth/signout` - Sign out
+- `/api/auth/session` - Get current session
+- `/api/auth/csrf` - CSRF token
+
+### Users
+
+#### GET /api/users
+Get all users (Admin only)
+
+**Response:**
+```json
+{
+  "users": [
+    {
+      "id": "...",
+      "email": "admin@eaglehome.com",
+      "name": "Admin User",
+      "role": "ADMIN",
+      "isActive": true,
+      "createdAt": "2024-12-26T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+#### POST /api/users
+Create a new user (Admin only)
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "name": "John Doe",
+  "password": "securepassword",
+  "role": "USER"
+}
+```
+
+#### PUT /api/users/[id]
+Update a user (Admin only)
+
+**Request Body:**
+```json
+{
+  "name": "Updated Name",
+  "email": "updated@example.com",
+  "role": "ADMIN"
+}
+```
+
+#### DELETE /api/users/[id]
+Delete a user (Admin only)
+
+#### POST /api/users/[id]/reset-password
+Reset user password (Admin only)
+
+**Request Body:**
+```json
+{
+  "newPassword": "newpassword123"
+}
+```
+
+### Inquiries
+
+#### POST /api/inquiries
 Submit a new customer inquiry.
 
 **Request Body:**
@@ -154,7 +278,7 @@ curl -X POST http://localhost:3000/api/inquiries \
   }'
 ```
 
-### GET /api/inquiries
+#### GET /api/inquiries
 Retrieve the latest 20 inquiries (most recent first).
 
 **Response:**
@@ -182,9 +306,13 @@ Retrieve the latest 20 inquiries (most recent first).
 - `/process` - Construction process
 - `/contact` - Contact form
 
-### Admin Routes
+### Authentication
+- `/login` - Login page
+
+### Admin Routes (Protected - Requires Authentication)
 - `/admin` - Admin dashboard
 - `/admin/inquiries` - View customer inquiries
+- `/admin/users` - User management (CRUD operations)
 - `/admin/customers` - Customer management (placeholder)
 - `/admin/projects` - Project tracking (placeholder)
 - `/admin/finance` - Financial management (placeholder)
@@ -235,20 +363,36 @@ npm start
 
 ## Future Enhancements
 
-- [ ] Add authentication for admin dashboard
+- [x] Add authentication for admin dashboard ✅
+- [x] User management system ✅
+- [x] Multi-language support (English/Sinhala) ✅
 - [ ] Implement customer management functionality
 - [ ] Add project tracking system
 - [ ] Create financial management tools
 - [ ] Build reporting and analytics
 - [ ] Add file upload for project photos
 - [ ] Implement email notifications
-- [ ] Add multi-language support
+- [ ] Password recovery system
+- [ ] Two-factor authentication
+
+## Documentation
+
+- **README.md** (this file) - Project overview and quick start
+- **USAGE_GUIDE.md** - Complete usage guide with login instructions
+- **QUICK_SETUP.md** - Quick setup for fixing seed errors
+- **SEED_TROUBLESHOOTING.md** - Detailed troubleshooting for database issues
+- **DATABASE_SETUP.md** - Database configuration details
+- **AUTH_IMPLEMENTATION.md** - Authentication system details
+- **I18N_IMPLEMENTATION.md** - Multi-language implementation
+- **IMPLEMENTATION_SUMMARY.md** - Overall implementation summary
 
 ## Notes
 
-- **Authentication**: Admin dashboard currently has no authentication. This is intentional for MVP. Authentication will be added in a future update.
-- **Mobile Responsive**: All pages are fully responsive and mobile-friendly.
-- **Overseas Clients**: The site specifically highlights support for international/overseas clients with remote communication.
+- **Authentication**: Admin dashboard is now protected with NextAuth.js authentication
+- **Default Admin**: After seeding, login with `admin@eaglehome.com` / `admin123`
+- **Mobile Responsive**: All pages are fully responsive and mobile-friendly
+- **Overseas Clients**: The site specifically highlights support for international/overseas clients with remote communication
+- **Security**: Passwords are hashed with bcryptjs (10 rounds)
 
 ## License
 
