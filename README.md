@@ -25,7 +25,7 @@ A professional construction company website with an admin dashboard for managing
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS v4
 - **Database**: MySQL
-- **ORM**: Prisma
+- **ORM**: Prisma v6
 - **Deployment**: Ready for Vercel or any Node.js hosting
 
 ## Getting Started
