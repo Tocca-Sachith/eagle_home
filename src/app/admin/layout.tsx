@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function AdminLayout({
   children,
@@ -9,6 +10,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: '📊' },
@@ -17,6 +19,7 @@ export default function AdminLayout({
     { href: '/admin/projects', label: 'Projects', icon: '🏗️' },
     { href: '/admin/finance', label: 'Finance', icon: '💰' },
     { href: '/admin/reports', label: 'Reports', icon: '📈' },
+    { href: '/admin/users', label: 'Users', icon: '👤' },
   ];
 
   return (
@@ -34,23 +37,25 @@ export default function AdminLayout({
               </Link>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-300">Admin User</span>
+              {session?.user && (
+                <>
+                  <span className="text-sm text-gray-300">
+                    {session.user.name || session.user.email}
+                  </span>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/login' })}
+                    className="text-sm bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition-colors"
+                  >
+                    ログアウト / Logout
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Auth Notice */}
-        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 mb-6 rounded">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">⚠️</span>
-            <p className="font-semibold">
-              Note: Authentication will be added in a future update. This admin area is currently unprotected.
-            </p>
-          </div>
-        </div>
-
         <div className="flex gap-8">
           {/* Sidebar */}
           <aside className="w-64 flex-shrink-0">

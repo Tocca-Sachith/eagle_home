@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import * as bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
@@ -8,8 +9,23 @@ async function main() {
   // Clear existing data
   console.log('🗑️  Clearing existing data...')
   await prisma.inquiry.deleteMany()
-  await prisma.customer.deleteMany()
   await prisma.project.deleteMany()
+  await prisma.customer.deleteMany()
+  await prisma.user.deleteMany()
+
+  // Seed default admin user
+  console.log('👤 Creating default admin user...')
+  const hashedPassword = await bcrypt.hash('admin123', 10)
+  const adminUser = await prisma.user.create({
+    data: {
+      email: 'admin@eaglehome.com',
+      name: 'Admin User',
+      password: hashedPassword,
+      role: 'ADMIN',
+      isActive: true,
+    },
+  })
+  console.log(`✅ Created admin user: ${adminUser.email}`)
 
   // Seed Inquiries
   console.log('📬 Seeding inquiries...')
@@ -147,7 +163,7 @@ async function main() {
 
   console.log(`✅ Created ${customers.length} customers`)
 
-    // Seed Projects
+  // Seed Projects
   console.log('🏗️  Seeding projects...')
   const projects = await Promise.all([
     prisma.project.create({
@@ -158,7 +174,7 @@ async function main() {
         location: 'Seaside District',
         startDate: new Date('2023-06-01'),
         endDatePlanned: new Date('2024-03-15'),
-        budgetTotal: '950000.00',
+        budgetTotal: 950000.00,
       },
     }),
     prisma.project.create({
@@ -169,7 +185,7 @@ async function main() {
         location: 'Downtown Historic District',
         startDate: new Date('2023-09-01'),
         endDatePlanned: new Date('2024-01-30'),
-        budgetTotal: '320000.00',
+        budgetTotal: 320000.00,
       },
     }),
     prisma.project.create({
@@ -180,7 +196,7 @@ async function main() {
         location: 'Premium Heights',
         startDate: new Date('2024-01-15'),
         endDatePlanned: new Date('2024-08-30'),
-        budgetTotal: '1200000.00',
+        budgetTotal: 1200000.00,
       },
     }),
     prisma.project.create({
@@ -190,7 +206,7 @@ async function main() {
         status: 'PLANNING',
         location: 'Suburban Community',
         startDate: new Date('2024-04-01'),
-        budgetTotal: '450000.00',
+        budgetTotal: 450000.00,
       },
     }),
     prisma.project.create({
@@ -201,7 +217,7 @@ async function main() {
         location: 'Coastal Area',
         startDate: new Date('2024-02-01'),
         endDatePlanned: new Date('2024-10-15'),
-        budgetTotal: '1100000.00',
+        budgetTotal: 1100000.00,
       },
     }),
   ])
