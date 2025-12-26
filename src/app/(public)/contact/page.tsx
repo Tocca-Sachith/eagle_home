@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function ContactPage() {
+  const { t } = useLanguage();
+  
   const [formData, setFormData] = useState({
     fullName: '',
     country: '',
@@ -38,7 +41,7 @@ export default function ContactPage() {
       if (response.ok) {
         setStatus({
           type: 'success',
-          message: 'Thank you for your inquiry! We will contact you within 24 hours.',
+          message: t('contact.form.successMessage'),
         });
         setFormData({
           fullName: '',
@@ -54,13 +57,13 @@ export default function ContactPage() {
       } else {
         setStatus({
           type: 'error',
-          message: data.error || 'Something went wrong. Please try again.',
+          message: data.error || t('contact.form.errorMessage'),
         });
       }
     } catch (error) {
       setStatus({
         type: 'error',
-        message: 'Failed to submit inquiry. Please check your connection and try again.',
+        message: t('contact.form.errorMessage'),
       });
     }
   };
@@ -80,9 +83,9 @@ export default function ContactPage() {
       <section className="bg-brand-navy text-white py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-5xl font-bold mb-6">Contact Us</h1>
+            <h1 className="text-5xl font-bold mb-6">{t('contact.hero.title')}</h1>
             <p className="text-xl text-gray-200">
-              Let's discuss your project. Fill out the form below and we'll get back to you within 24 hours.
+              {t('contact.hero.subtitle')}
             </p>
           </div>
         </div>
@@ -96,7 +99,7 @@ export default function ContactPage() {
               {/* Full Name */}
               <div>
                 <label htmlFor="fullName" className="block text-sm font-semibold text-brand-navy mb-2">
-                  Full Name <span className="text-red-500">*</span>
+                  {t('contact.form.fullName')} <span className="text-red-500">{t('contact.form.required')}</span>
                 </label>
                 <input
                   type="text"
@@ -106,14 +109,14 @@ export default function ContactPage() {
                   value={formData.fullName}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-gold"
-                  placeholder="John Doe"
+                  placeholder={t('contact.form.fullNamePlaceholder')}
                 />
               </div>
 
               {/* Email */}
               <div>
                 <label htmlFor="email" className="block text-sm font-semibold text-brand-navy mb-2">
-                  Email Address <span className="text-red-500">*</span>
+                  {t('contact.form.email')} <span className="text-red-500">{t('contact.form.required')}</span>
                 </label>
                 <input
                   type="email"
@@ -123,7 +126,7 @@ export default function ContactPage() {
                   value={formData.email}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-gold"
-                  placeholder="john@example.com"
+                  placeholder={t('contact.form.emailPlaceholder')}
                 />
               </div>
 
@@ -131,7 +134,7 @@ export default function ContactPage() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="country" className="block text-sm font-semibold text-brand-navy mb-2">
-                    Country
+                    {t('contact.form.country')}
                   </label>
                   <input
                     type="text"
@@ -140,12 +143,12 @@ export default function ContactPage() {
                     value={formData.country}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-gold"
-                    placeholder="United States"
+                    placeholder={t('contact.form.countryPlaceholder')}
                   />
                 </div>
                 <div>
                   <label htmlFor="phone" className="block text-sm font-semibold text-brand-navy mb-2">
-                    Phone Number
+                    {t('contact.form.phone')}
                   </label>
                   <input
                     type="tel"
@@ -154,7 +157,7 @@ export default function ContactPage() {
                     value={formData.phone}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-gold"
-                    placeholder="+1 (555) 123-4567"
+                    placeholder={t('contact.form.phonePlaceholder')}
                   />
                 </div>
               </div>
@@ -162,7 +165,7 @@ export default function ContactPage() {
               {/* Service Type */}
               <div>
                 <label htmlFor="serviceType" className="block text-sm font-semibold text-brand-navy mb-2">
-                  Service Type <span className="text-red-500">*</span>
+                  {t('contact.form.serviceType')} <span className="text-red-500">{t('contact.form.required')}</span>
                 </label>
                 <select
                   id="serviceType"
@@ -172,20 +175,20 @@ export default function ContactPage() {
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-gold"
                 >
-                  <option value="">Select a service</option>
-                  <option value="build-on-land">Build on Your Land</option>
-                  <option value="land-purchase-build">Land Purchase + Build</option>
-                  <option value="renovation">Renovation & Remodeling</option>
-                  <option value="design-planning">Design & Planning</option>
-                  <option value="turnkey">Turnkey Delivery</option>
-                  <option value="consultation">General Consultation</option>
+                  <option value="">{t('contact.form.selectService')}</option>
+                  <option value="build-on-land">{t('contact.serviceTypes.buildOnLand')}</option>
+                  <option value="land-purchase-build">{t('contact.serviceTypes.landPurchaseBuild')}</option>
+                  <option value="renovation">{t('contact.serviceTypes.renovation')}</option>
+                  <option value="design-planning">{t('contact.serviceTypes.designPlanning')}</option>
+                  <option value="turnkey">{t('contact.serviceTypes.turnkey')}</option>
+                  <option value="consultation">{t('contact.serviceTypes.consultation')}</option>
                 </select>
               </div>
 
               {/* Has Land */}
               <div>
                 <label className="block text-sm font-semibold text-brand-navy mb-2">
-                  Do you already own land?
+                  {t('contact.form.hasLand')}
                 </label>
                 <div className="flex gap-6">
                   <label className="flex items-center">
@@ -197,7 +200,7 @@ export default function ContactPage() {
                       onChange={handleChange}
                       className="mr-2"
                     />
-                    <span className="text-brand-gray">Yes</span>
+                    <span className="text-brand-gray">{t('contact.form.yes')}</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -208,7 +211,7 @@ export default function ContactPage() {
                       onChange={handleChange}
                       className="mr-2"
                     />
-                    <span className="text-brand-gray">No</span>
+                    <span className="text-brand-gray">{t('contact.form.no')}</span>
                   </label>
                   <label className="flex items-center">
                     <input
@@ -219,7 +222,7 @@ export default function ContactPage() {
                       onChange={handleChange}
                       className="mr-2"
                     />
-                    <span className="text-brand-gray">Currently Looking</span>
+                    <span className="text-brand-gray">{t('contact.form.looking')}</span>
                   </label>
                 </div>
               </div>
@@ -227,7 +230,7 @@ export default function ContactPage() {
               {/* Desired Location */}
               <div>
                 <label htmlFor="desiredLocation" className="block text-sm font-semibold text-brand-navy mb-2">
-                  Desired Location/Area
+                  {t('contact.form.desiredLocation')}
                 </label>
                 <input
                   type="text"
@@ -236,14 +239,14 @@ export default function ContactPage() {
                   value={formData.desiredLocation}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-gold"
-                  placeholder="e.g., Downtown, Suburban area, Coastal"
+                  placeholder={t('contact.form.locationPlaceholder')}
                 />
               </div>
 
               {/* Budget Range */}
               <div>
                 <label htmlFor="budgetRange" className="block text-sm font-semibold text-brand-navy mb-2">
-                  Budget Range
+                  {t('contact.form.budgetRange')}
                 </label>
                 <select
                   id="budgetRange"
@@ -252,20 +255,20 @@ export default function ContactPage() {
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-gold"
                 >
-                  <option value="">Select budget range</option>
-                  <option value="under-200k">Under $200,000</option>
-                  <option value="200k-400k">$200,000 - $400,000</option>
-                  <option value="400k-600k">$400,000 - $600,000</option>
-                  <option value="600k-1m">$600,000 - $1,000,000</option>
-                  <option value="over-1m">Over $1,000,000</option>
-                  <option value="flexible">Flexible / To be discussed</option>
+                  <option value="">{t('contact.form.selectBudget')}</option>
+                  <option value="under-200k">{t('contact.budgetRanges.under200k')}</option>
+                  <option value="200k-400k">{t('contact.budgetRanges.200k400k')}</option>
+                  <option value="400k-600k">{t('contact.budgetRanges.400k600k')}</option>
+                  <option value="600k-1m">{t('contact.budgetRanges.600k1m')}</option>
+                  <option value="over-1m">{t('contact.budgetRanges.over1m')}</option>
+                  <option value="flexible">{t('contact.budgetRanges.flexible')}</option>
                 </select>
               </div>
 
               {/* Message */}
               <div>
                 <label htmlFor="message" className="block text-sm font-semibold text-brand-navy mb-2">
-                  Additional Details
+                  {t('contact.form.message')}
                 </label>
                 <textarea
                   id="message"
@@ -274,7 +277,7 @@ export default function ContactPage() {
                   value={formData.message}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-gold"
-                  placeholder="Tell us more about your project, timeline, or any specific requirements..."
+                  placeholder={t('contact.form.messagePlaceholder')}
                 />
               </div>
 
@@ -289,7 +292,7 @@ export default function ContactPage() {
                       : 'bg-blue-100 text-blue-800'
                   }`}
                 >
-                  {status.message || 'Processing...'}
+                  {status.message || t('common.loading')}
                 </div>
               )}
 
@@ -299,7 +302,7 @@ export default function ContactPage() {
                 disabled={status.type === 'loading'}
                 className="w-full bg-brand-gold text-brand-navy px-8 py-4 rounded-lg font-semibold hover:bg-yellow-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {status.type === 'loading' ? 'Submitting...' : 'Submit Inquiry'}
+                {status.type === 'loading' ? t('contact.form.submitting') : t('contact.form.submitButton')}
               </button>
             </form>
           </div>
@@ -311,23 +314,23 @@ export default function ContactPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-brand-navy mb-8 text-center">
-              Other Ways to Reach Us
+              {t('contact.otherWays.title')}
             </h2>
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center">
                 <div className="text-4xl mb-4">📧</div>
-                <h3 className="font-semibold text-brand-navy mb-2">Email</h3>
+                <h3 className="font-semibold text-brand-navy mb-2">{t('footer.email')}</h3>
                 <p className="text-brand-gray">info@eaglehome.com</p>
               </div>
               <div className="text-center">
                 <div className="text-4xl mb-4">📞</div>
-                <h3 className="font-semibold text-brand-navy mb-2">Phone</h3>
+                <h3 className="font-semibold text-brand-navy mb-2">{t('footer.phone')}</h3>
                 <p className="text-brand-gray">+1 (555) 123-4567</p>
               </div>
               <div className="text-center">
                 <div className="text-4xl mb-4">💬</div>
                 <h3 className="font-semibold text-brand-navy mb-2">WhatsApp</h3>
-                <p className="text-brand-gray">Available 24/7</p>
+                <p className="text-brand-gray">{t('contact.otherWays.available')}</p>
               </div>
             </div>
           </div>

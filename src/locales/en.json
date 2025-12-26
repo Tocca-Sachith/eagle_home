@@ -1,0 +1,289 @@
+{
+  "common": {
+    "home": "Home",
+    "services": "Services",
+    "projects": "Projects",
+    "process": "Process",
+    "contact": "Contact",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "readMore": "Read More",
+    "viewAll": "View All",
+    "submit": "Submit",
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error"
+  },
+  "header": {
+    "companyName": "Eagle Home & Construction",
+    "tagline": "Building Your Dreams Into Reality"
+  },
+  "footer": {
+    "description": "Building dreams, creating homes. Your trusted partner for construction excellence.",
+    "quickLinks": "Quick Links",
+    "contactInfo": "Contact Info",
+    "email": "Email",
+    "phone": "Phone",
+    "availableFor": "Available for international clients",
+    "copyright": "Eagle Home & Construction. All rights reserved."
+  },
+  "home": {
+    "hero": {
+      "title": "Building Your Dreams Into Reality",
+      "subtitle": "Professional construction services with full support for overseas clients. From land acquisition to turnkey delivery.",
+      "cta1": "Get Started",
+      "cta2": "Our Services"
+    },
+    "services": {
+      "title": "Our Services",
+      "subtitle": "Comprehensive construction solutions tailored to your needs",
+      "buildOnLand": {
+        "title": "Build on Your Land",
+        "description": "We bring your vision to life on your property with expert craftsmanship."
+      },
+      "landPurchase": {
+        "title": "Land Purchase + Build",
+        "description": "Complete package: we help you find the perfect land and build your dream home."
+      },
+      "renovation": {
+        "title": "Renovation & Remodeling",
+        "description": "Transform your existing space with our comprehensive renovation services."
+      },
+      "design": {
+        "title": "Design & Planning",
+        "description": "Full architectural design and planning services for approval-ready plans."
+      },
+      "turnkey": {
+        "title": "Turnkey Delivery",
+        "description": "Move-in ready homes with every detail completed to perfection."
+      },
+      "financing": {
+        "title": "Financing Support",
+        "description": "Monthly payment plans and bank introduction for easy financing."
+      }
+    },
+    "whyChooseUs": {
+      "title": "Why Choose Eagle Home & Construction",
+      "remote": {
+        "title": "Full Remote Support for Overseas Clients",
+        "description": "Stay connected with regular phone and video updates. We handle everything so you can build from anywhere in the world."
+      },
+      "payment": {
+        "title": "Flexible Payment Options",
+        "description": "Monthly payment plans and bank introduction services to make your dream home affordable."
+      },
+      "endToEnd": {
+        "title": "End-to-End Service",
+        "description": "From initial design and permits to final turnkey delivery, we manage every aspect of your project."
+      }
+    },
+    "cta": {
+      "title": "Ready to Start Your Project?",
+      "subtitle": "Contact us today for a free consultation. Let's discuss how we can bring your vision to life.",
+      "button": "Contact Us Now"
+    }
+  },
+  "services": {
+    "hero": {
+      "title": "Our Services",
+      "subtitle": "Comprehensive construction solutions designed to meet every need, from initial planning to final delivery."
+    },
+    "overseas": {
+      "title": "Full Support for Overseas Clients",
+      "subtitle": "Distance is no barrier to building your dream home. We provide comprehensive remote support for international clients.",
+      "updates": {
+        "title": "Regular Updates",
+        "description": "Scheduled phone and video calls to keep you informed of progress at every stage."
+      },
+      "documentation": {
+        "title": "Digital Documentation",
+        "description": "All plans, contracts, and approvals handled digitally for your convenience."
+      },
+      "representation": {
+        "title": "On-Site Representation",
+        "description": "Our team acts as your eyes and ears, managing all on-site decisions."
+      },
+      "flexibility": {
+        "title": "Time Zone Flexibility",
+        "description": "We accommodate your schedule with flexible communication times."
+      }
+    },
+    "cta": {
+      "title": "Let's Discuss Your Project",
+      "subtitle": "Every project is unique. Contact us to discuss how our services can be tailored to your specific needs."
+    }
+  },
+  "projects": {
+    "hero": {
+      "title": "Our Projects",
+      "subtitle": "A showcase of our completed works - from custom homes to complete renovations."
+    },
+    "stats": {
+      "completed": "Projects Completed",
+      "satisfaction": "Client Satisfaction",
+      "experience": "Years Experience",
+      "overseas": "Overseas Clients"
+    },
+    "testimonials": {
+      "title": "What Our Clients Say"
+    },
+    "cta": {
+      "title": "Start Your Project Today",
+      "subtitle": "Join our satisfied clients and let us help you create your perfect space."
+    }
+  },
+  "process": {
+    "hero": {
+      "title": "Our Process",
+      "subtitle": "A clear, transparent journey from concept to completion. Every step managed with professional care."
+    },
+    "steps": {
+      "consultation": {
+        "title": "Initial Consultation",
+        "description": "We begin with a comprehensive discussion of your vision, needs, and budget."
+      },
+      "design": {
+        "title": "Design & Planning",
+        "description": "Our architects and designers create detailed plans tailored to your specifications."
+      },
+      "contract": {
+        "title": "Contract & Financing",
+        "description": "Clear, transparent contracts are prepared. We assist with financing arrangements."
+      },
+      "construction": {
+        "title": "Construction Phase",
+        "description": "Your project comes to life. Regular updates keep you informed of progress."
+      },
+      "finishing": {
+        "title": "Finishing & Details",
+        "description": "Interior finishing, fixtures, and all the details that make your house a home."
+      },
+      "handover": {
+        "title": "Handover & Support",
+        "description": "Final inspection, documentation, and keys to your new home."
+      }
+    },
+    "communication": {
+      "title": "Communication for Overseas Clients",
+      "video": {
+        "title": "Weekly Video Updates",
+        "description": "Scheduled video calls showing construction progress."
+      },
+      "photos": {
+        "title": "Daily Photo Reports",
+        "description": "Receive daily photo documentation of work progress."
+      },
+      "support": {
+        "title": "24/7 WhatsApp Support",
+        "description": "Direct messaging access to your project manager."
+      },
+      "digital": {
+        "title": "Digital Documentation",
+        "description": "All contracts, plans, and approvals handled digitally."
+      }
+    },
+    "cta": {
+      "title": "Ready to Begin Your Journey?",
+      "subtitle": "Let's start with a conversation about your vision. Schedule your initial consultation today."
+    }
+  },
+  "contact": {
+    "hero": {
+      "title": "Contact Us",
+      "subtitle": "Let's discuss your project. Fill out the form below and we'll get back to you within 24 hours."
+    },
+    "form": {
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "John Doe",
+      "email": "Email Address",
+      "emailPlaceholder": "john@example.com",
+      "country": "Country",
+      "countryPlaceholder": "United States",
+      "phone": "Phone Number",
+      "phonePlaceholder": "+1 (555) 123-4567",
+      "serviceType": "Service Type",
+      "selectService": "Select a service",
+      "hasLand": "Do you already own land?",
+      "yes": "Yes",
+      "no": "No",
+      "looking": "Currently Looking",
+      "desiredLocation": "Desired Location/Area",
+      "locationPlaceholder": "e.g., Downtown, Suburban area, Coastal",
+      "budgetRange": "Budget Range",
+      "selectBudget": "Select budget range",
+      "message": "Additional Details",
+      "messagePlaceholder": "Tell us more about your project, timeline, or any specific requirements...",
+      "required": "*",
+      "submitting": "Submitting...",
+      "submitButton": "Submit Inquiry",
+      "successMessage": "Thank you for your inquiry! We will contact you within 24 hours.",
+      "errorMessage": "Something went wrong. Please try again."
+    },
+    "serviceTypes": {
+      "buildOnLand": "Build on Your Land",
+      "landPurchaseBuild": "Land Purchase + Build",
+      "renovation": "Renovation & Remodeling",
+      "designPlanning": "Design & Planning",
+      "turnkey": "Turnkey Delivery",
+      "consultation": "General Consultation"
+    },
+    "budgetRanges": {
+      "under200k": "Under $200,000",
+      "200k400k": "$200,000 - $400,000",
+      "400k600k": "$400,000 - $600,000",
+      "600k1m": "$600,000 - $1,000,000",
+      "over1m": "Over $1,000,000",
+      "flexible": "Flexible / To be discussed"
+    },
+    "otherWays": {
+      "title": "Other Ways to Reach Us",
+      "available": "Available 24/7"
+    }
+  },
+  "admin": {
+    "title": "Eagle Admin",
+    "backToWebsite": "← Back to Website",
+    "authNotice": "Note: Authentication will be added in a future update. This admin area is currently unprotected.",
+    "nav": {
+      "dashboard": "Dashboard",
+      "inquiries": "Inquiries",
+      "customers": "Customers",
+      "projects": "Projects",
+      "finance": "Finance",
+      "reports": "Reports"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "stats": {
+        "totalInquiries": "Total Inquiries",
+        "activeProjects": "Active Projects",
+        "totalCustomers": "Total Customers",
+        "revenue": "Revenue (YTD)"
+      },
+      "quickActions": "Quick Actions",
+      "recentActivity": "Recent Activity",
+      "noActivity": "No recent activity to display."
+    },
+    "inquiries": {
+      "title": "Inquiries",
+      "refresh": "Refresh",
+      "noInquiries": "No Inquiries Yet",
+      "noInquiriesDesc": "Customer inquiries will appear here once they submit the contact form.",
+      "viewDetails": "View Details",
+      "details": "Inquiry Details",
+      "dateSubmitted": "Date Submitted",
+      "sendEmail": "Send Email",
+      "call": "Call",
+      "loading": "Loading inquiries...",
+      "table": {
+        "date": "Date",
+        "name": "Name",
+        "email": "Email",
+        "country": "Country",
+        "service": "Service",
+        "budget": "Budget",
+        "action": "Action"
+      }
+    }
+  }
+}
