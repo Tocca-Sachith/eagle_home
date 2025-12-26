@@ -3,6 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --brand-navy: #1e3a5f;
+  --brand-gray: #64748b;
+  --brand-gold: #d4a574;
 }
 
 @theme inline {
@@ -10,6 +13,11 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  /* Brand colors */
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-gray: var(--brand-gray);
+  --color-brand-gold: var(--brand-gold);
 }
 
 @media (prefers-color-scheme: dark) {
