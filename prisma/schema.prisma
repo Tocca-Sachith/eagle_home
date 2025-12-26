@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -20,7 +20,7 @@ model Inquiry {
   hasLand         Boolean?
   desiredLocation String?
   budgetRange     String?
-  message         String?  @db.Text
+  message         String?
   createdAt       DateTime @default(now())
 
   @@map("inquiries")

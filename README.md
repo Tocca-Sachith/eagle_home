@@ -67,9 +67,17 @@ DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE"
 # Generate Prisma Client
 npx prisma generate
 
-# Create database tables
+# Push schema to database (development)
+npm run db:push
+
+# Or create migration (production)
 npx prisma migrate dev --name init
+
+# Seed sample data
+npm run db:seed
 ```
+
+**Note:** See [DATABASE_SETUP.md](./DATABASE_SETUP.md) for detailed database setup instructions.
 
 4. **Start the development server:**
 
