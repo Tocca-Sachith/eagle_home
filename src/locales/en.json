@@ -284,6 +284,83 @@
         "budget": "Budget",
         "action": "Action"
       }
+    },
+    "projects": {
+      "title": "Projects",
+      "addNew": "Add New Project",
+      "editProject": "Edit Project",
+      "deleteProject": "Delete Project",
+      "noProjects": "No Projects Yet",
+      "noProjectsDesc": "Projects will appear here once you create them.",
+      "loading": "Loading projects...",
+      "basicInfo": "Basic Information",
+      "financialInfo": "Financial Information",
+      "scheduleInfo": "Schedule",
+      "displaySettings": "Display Settings",
+      "projectImages": "Project Images",
+      "confirmDelete": "Are you sure you want to delete this project?",
+      "deleteSuccess": "Project deleted successfully",
+      "createSuccess": "Project created successfully",
+      "updateSuccess": "Project updated successfully",
+      "form": {
+        "title": "Title",
+        "titlePlaceholder": "Enter project title",
+        "description": "Description",
+        "descriptionPlaceholder": "Enter project description",
+        "location": "Location",
+        "locationPlaceholder": "Enter project location",
+        "projectType": "Project Type",
+        "selectProjectType": "Select project type",
+        "status": "Status",
+        "selectStatus": "Select status",
+        "customer": "Customer",
+        "selectCustomer": "Select customer (optional)",
+        "budgetTotal": "Budget Total",
+        "actualCost": "Actual Cost",
+        "contractDate": "Contract Date",
+        "startDate": "Start Date",
+        "endDatePlanned": "Planned End Date",
+        "actualEndDate": "Actual End Date",
+        "investorName": "Investor Name",
+        "investorContact": "Investor Contact",
+        "currentPhase": "Current Phase",
+        "progressPercent": "Progress (%)",
+        "isPublished": "Publish on Homepage",
+        "displayOrder": "Display Order",
+        "notes": "Notes",
+        "thumbnail": "Thumbnail Image",
+        "changeThumbnail": "Change Thumbnail",
+        "cancel": "Cancel",
+        "save": "Save",
+        "creating": "Creating...",
+        "updating": "Updating..."
+      },
+      "types": {
+        "residential": "Residential",
+        "commercial": "Commercial",
+        "renovation": "Renovation",
+        "custom": "Custom Build"
+      },
+      "statuses": {
+        "planning": "Planning",
+        "inProgress": "In Progress",
+        "completed": "Completed",
+        "onHold": "On Hold"
+      },
+      "table": {
+        "title": "Title",
+        "type": "Type",
+        "status": "Status",
+        "customer": "Customer",
+        "progress": "Progress",
+        "budget": "Budget",
+        "published": "Published",
+        "actions": "Actions",
+        "edit": "Edit",
+        "delete": "Delete",
+        "yes": "Yes",
+        "no": "No"
+      }
     }
   }
 }

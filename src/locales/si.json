@@ -284,6 +284,83 @@
         "budget": "අයවැය",
         "action": "ක්‍රියාව"
       }
+    },
+    "projects": {
+      "title": "ව්‍යාපෘති",
+      "addNew": "නව ව්‍යාපෘතියක් එක් කරන්න",
+      "editProject": "ව්‍යාපෘතිය සංස්කරණය කරන්න",
+      "deleteProject": "ව්‍යාපෘතිය මකන්න",
+      "noProjects": "තවම ව්‍යාපෘති නැත",
+      "noProjectsDesc": "ඔබ ව්‍යාපෘති නිර්මාණය කළ පසු ඒවා මෙහි දිස්වේ.",
+      "loading": "ව්‍යාපෘති පූරණය වෙමින්...",
+      "basicInfo": "මූලික තොරතුරු",
+      "financialInfo": "මූල්‍ය තොරතුරු",
+      "scheduleInfo": "කාලසටහන",
+      "displaySettings": "ප්‍රදර්ශන සැකසීම්",
+      "projectImages": "ව්‍යාපෘති රූප",
+      "confirmDelete": "ඔබට මෙම ව්‍යාපෘතිය මකා දැමීමට අවශ්‍ය බව විශ්වාසද?",
+      "deleteSuccess": "ව්‍යාපෘතිය සාර්ථකව මකා දමන ලදී",
+      "createSuccess": "ව්‍යාපෘතිය සාර්ථකව නිර්මාණය කරන ලදී",
+      "updateSuccess": "ව්‍යාපෘතිය සාර්ථකව යාවත්කාලීන කරන ලදී",
+      "form": {
+        "title": "මාතෘකාව",
+        "titlePlaceholder": "ව්‍යාපෘති මාතෘකාව ඇතුළත් කරන්න",
+        "description": "විස්තරය",
+        "descriptionPlaceholder": "ව්‍යාපෘති විස්තරය ඇතුළත් කරන්න",
+        "location": "ස්ථානය",
+        "locationPlaceholder": "ව්‍යාපෘති ස්ථානය ඇතුළත් කරන්න",
+        "projectType": "ව්‍යාපෘති වර්ගය",
+        "selectProjectType": "ව්‍යාපෘති වර්ගය තෝරන්න",
+        "status": "තත්වය",
+        "selectStatus": "තත්වය තෝරන්න",
+        "customer": "ගනුදෙනුකරු",
+        "selectCustomer": "ගනුදෙනුකරු තෝරන්න (විකල්ප)",
+        "budgetTotal": "මුළු අයවැය",
+        "actualCost": "සැබෑ පිරිවැය",
+        "contractDate": "ගිවිසුම් දිනය",
+        "startDate": "ආරම්භක දිනය",
+        "endDatePlanned": "සැලසුම් කළ අවසන් දිනය",
+        "actualEndDate": "සැබෑ අවසන් දිනය",
+        "investorName": "ආයෝජකයාගේ නම",
+        "investorContact": "ආයෝජක සම්බන්ධතාව",
+        "currentPhase": "වත්මන් අදියර",
+        "progressPercent": "ප්‍රගතිය (%)",
+        "isPublished": "මුල් පිටුවේ ප්‍රකාශනය කරන්න",
+        "displayOrder": "ප්‍රදර්ශන අනුපිළිවෙල",
+        "notes": "සටහන්",
+        "thumbnail": "සිඟිති රූපය",
+        "changeThumbnail": "සිඟිති රූපය වෙනස් කරන්න",
+        "cancel": "අවලංගු කරන්න",
+        "save": "සුරකින්න",
+        "creating": "නිර්මාණය කරමින්...",
+        "updating": "යාවත්කාලීන කරමින්..."
+      },
+      "types": {
+        "residential": "නේවාසික",
+        "commercial": "වාණිජ",
+        "renovation": "ප්‍රතිසංස්කරණ",
+        "custom": "අභිරුචි ඉදිකිරීම"
+      },
+      "statuses": {
+        "planning": "සැලසුම්කරණය",
+        "inProgress": "ක්‍රියාත්මකයි",
+        "completed": "සම්පූර්ණයි",
+        "onHold": "තාවකාලිකව නවතා ඇත"
+      },
+      "table": {
+        "title": "මාතෘකාව",
+        "type": "වර්ගය",
+        "status": "තත්වය",
+        "customer": "ගනුදෙනුකරු",
+        "progress": "ප්‍රගතිය",
+        "budget": "අයවැය",
+        "published": "ප්‍රකාශිතයි",
+        "actions": "ක්‍රියාමාර්ග",
+        "edit": "සංස්කරණය",
+        "delete": "මකන්න",
+        "yes": "ඔව්",
+        "no": "නැත"
+      }
     }
   }
 }
