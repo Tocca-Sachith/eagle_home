@@ -148,6 +148,8 @@ export default function AdminProjectsPage() {
     })
     setThumbnailFile(null)
     setShowForm(true)
+    // スクロールをトップに
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleDelete = async (id: string) => {
@@ -216,6 +218,7 @@ export default function AdminProjectsPage() {
         )
         setShowForm(false)
         fetchProjects()
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
         const error = await res.json()
         alert(error.error || 'Failed to save project')
@@ -288,26 +291,35 @@ export default function AdminProjectsPage() {
 
   if (showForm) {
     return (
-      <div>
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-brand-navy">
+      <div className="max-w-5xl mx-auto">
+        <div className="mb-6">
+          <button
+            onClick={() => setShowForm(false)}
+            className="flex items-center text-brand-navy hover:text-brand-gold transition-colors mb-4"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            {t('admin.projects.table.title')}
+          </button>
+          <h1 className="text-2xl md:text-3xl font-bold text-brand-navy">
             {editingProject
               ? t('admin.projects.editProject')
               : t('admin.projects.addNew')}
           </h1>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <form onSubmit={handleSubmit}>
+        <div className="bg-white rounded-lg shadow-md p-4 md:p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
-            <div className="mb-8">
-              <h2 className="text-xl font-bold text-brand-navy mb-4">
+            <div>
+              <h2 className="text-lg md:text-xl font-bold text-brand-navy mb-4 pb-2 border-b">
                 {t('admin.projects.basicInfo')}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
+              <div className="space-y-4">
+                <div>
                   <label className="block text-sm font-medium text-brand-navy mb-2">
-                    {t('admin.projects.form.title')} *
+                    {t('admin.projects.form.title')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -321,7 +333,7 @@ export default function AdminProjectsPage() {
                   />
                 </div>
 
-                <div className="md:col-span-2">
+                <div>
                   <label className="block text-sm font-medium text-brand-navy mb-2">
                     {t('admin.projects.form.description')}
                   </label>
@@ -336,83 +348,85 @@ export default function AdminProjectsPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-brand-navy mb-2">
-                    {t('admin.projects.form.location')}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) =>
-                      setFormData({ ...formData, location: e.target.value })
-                    }
-                    placeholder={t('admin.projects.form.locationPlaceholder')}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                  />
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-brand-navy mb-2">
+                      {t('admin.projects.form.location')}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.location}
+                      onChange={(e) =>
+                        setFormData({ ...formData, location: e.target.value })
+                      }
+                      placeholder={t('admin.projects.form.locationPlaceholder')}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-brand-navy mb-2">
-                    {t('admin.projects.form.projectType')} *
-                  </label>
-                  <select
-                    required
-                    value={formData.projectType}
-                    onChange={(e) =>
-                      setFormData({ ...formData, projectType: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                  >
-                    <option value="residential">{t('admin.projects.types.residential')}</option>
-                    <option value="commercial">{t('admin.projects.types.commercial')}</option>
-                    <option value="renovation">{t('admin.projects.types.renovation')}</option>
-                    <option value="custom">{t('admin.projects.types.custom')}</option>
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-brand-navy mb-2">
+                      {t('admin.projects.form.projectType')} <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      required
+                      value={formData.projectType}
+                      onChange={(e) =>
+                        setFormData({ ...formData, projectType: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                    >
+                      <option value="residential">{t('admin.projects.types.residential')}</option>
+                      <option value="commercial">{t('admin.projects.types.commercial')}</option>
+                      <option value="renovation">{t('admin.projects.types.renovation')}</option>
+                      <option value="custom">{t('admin.projects.types.custom')}</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-brand-navy mb-2">
-                    {t('admin.projects.form.status')}
-                  </label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) =>
-                      setFormData({ ...formData, status: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                  >
-                    <option value="PLANNING">{t('admin.projects.statuses.planning')}</option>
-                    <option value="IN_PROGRESS">{t('admin.projects.statuses.inProgress')}</option>
-                    <option value="COMPLETED">{t('admin.projects.statuses.completed')}</option>
-                    <option value="ON_HOLD">{t('admin.projects.statuses.onHold')}</option>
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-brand-navy mb-2">
+                      {t('admin.projects.form.status')}
+                    </label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) =>
+                        setFormData({ ...formData, status: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                    >
+                      <option value="PLANNING">{t('admin.projects.statuses.planning')}</option>
+                      <option value="IN_PROGRESS">{t('admin.projects.statuses.inProgress')}</option>
+                      <option value="COMPLETED">{t('admin.projects.statuses.completed')}</option>
+                      <option value="ON_HOLD">{t('admin.projects.statuses.onHold')}</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-brand-navy mb-2">
-                    {t('admin.projects.form.customer')}
-                  </label>
-                  <select
-                    value={formData.customerId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, customerId: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                  >
-                    <option value="">{t('admin.projects.form.selectCustomer')}</option>
-                    {customers.map((customer) => (
-                      <option key={customer.id} value={customer.id}>
-                        {customer.fullName} ({customer.customerNumber})
-                      </option>
-                    ))}
-                  </select>
+                  <div>
+                    <label className="block text-sm font-medium text-brand-navy mb-2">
+                      {t('admin.projects.form.customer')}
+                    </label>
+                    <select
+                      value={formData.customerId}
+                      onChange={(e) =>
+                        setFormData({ ...formData, customerId: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                    >
+                      <option value="">{t('admin.projects.form.selectCustomer')}</option>
+                      {customers.map((customer) => (
+                        <option key={customer.id} value={customer.id}>
+                          {customer.fullName} ({customer.customerNumber})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Financial Information */}
-            <div className="mb-8">
-              <h2 className="text-xl font-bold text-brand-navy mb-4">
+            <div>
+              <h2 className="text-lg md:text-xl font-bold text-brand-navy mb-4 pb-2 border-b">
                 {t('admin.projects.financialInfo')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -480,8 +494,8 @@ export default function AdminProjectsPage() {
             </div>
 
             {/* Schedule */}
-            <div className="mb-8">
-              <h2 className="text-xl font-bold text-brand-navy mb-4">
+            <div>
+              <h2 className="text-lg md:text-xl font-bold text-brand-navy mb-4 pb-2 border-b">
                 {t('admin.projects.scheduleInfo')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -559,40 +573,44 @@ export default function AdminProjectsPage() {
                   <label className="block text-sm font-medium text-brand-navy mb-2">
                     {t('admin.projects.form.progressPercent')}
                   </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={formData.progressPercent}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        progressPercent: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData.progressPercent}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          progressPercent: e.target.value,
+                        })
+                      }
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                    />
+                    <span className="text-brand-gray">%</span>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Display Settings */}
-            <div className="mb-8">
-              <h2 className="text-xl font-bold text-brand-navy mb-4">
+            <div>
+              <h2 className="text-lg md:text-xl font-bold text-brand-navy mb-4 pb-2 border-b">
                 {t('admin.projects.displaySettings')}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-brand-navy mb-2">
                     {t('admin.projects.form.thumbnail')}
                   </label>
                   {editingProject?.thumbnailImage && !thumbnailFile && (
-                    <div className="mb-2">
+                    <div className="mb-3">
                       <img
                         src={editingProject.thumbnailImage}
                         alt="Current thumbnail"
-                        className="w-32 h-32 object-cover rounded"
+                        className="w-40 h-40 object-cover rounded-lg border-2 border-gray-200"
                       />
+                      <p className="text-xs text-gray-500 mt-1">現在の画像</p>
                     </div>
                   )}
                   <input
@@ -601,44 +619,46 @@ export default function AdminProjectsPage() {
                     onChange={(e) =>
                       setThumbnailFile(e.target.files?.[0] || null)
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-brand-navy file:text-white hover:file:bg-opacity-90"
                   />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-brand-navy mb-2">
+                      {t('admin.projects.form.displayOrder')}
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.displayOrder}
+                      onChange={(e) =>
+                        setFormData({ ...formData, displayOrder: e.target.value })
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                    />
+                  </div>
+
+                  <div className="flex items-center pt-7">
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.isPublished}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            isPublished: e.target.checked,
+                          })
+                        }
+                        className="w-5 h-5 text-brand-gold focus:ring-brand-gold border-gray-300 rounded"
+                      />
+                      <span className="ml-3 text-sm font-medium text-brand-navy">
+                        {t('admin.projects.form.isPublished')}
+                      </span>
+                    </label>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-brand-navy mb-2">
-                    {t('admin.projects.form.displayOrder')}
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.displayOrder}
-                    onChange={(e) =>
-                      setFormData({ ...formData, displayOrder: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.isPublished}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          isPublished: e.target.checked,
-                        })
-                      }
-                      className="w-4 h-4 text-brand-gold focus:ring-brand-gold border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-brand-navy">
-                      {t('admin.projects.form.isPublished')}
-                    </span>
-                  </label>
-                </div>
-
-                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-brand-navy mb-2">
                     {t('admin.projects.form.notes')}
                   </label>
@@ -655,11 +675,11 @@ export default function AdminProjectsPage() {
             </div>
 
             {/* Form Actions */}
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-6 py-3 bg-brand-navy text-white rounded-md hover:bg-opacity-90 disabled:opacity-50"
+                className="flex-1 sm:flex-none px-8 py-3 bg-brand-navy text-white rounded-md hover:bg-opacity-90 disabled:opacity-50 font-medium transition-colors"
               >
                 {submitting
                   ? editingProject
@@ -670,7 +690,8 @@ export default function AdminProjectsPage() {
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="px-6 py-3 bg-gray-300 text-brand-navy rounded-md hover:bg-gray-400"
+                disabled={submitting}
+                className="flex-1 sm:flex-none px-8 py-3 bg-gray-200 text-brand-navy rounded-md hover:bg-gray-300 font-medium transition-colors"
               >
                 {t('admin.projects.form.cancel')}
               </button>
@@ -683,14 +704,17 @@ export default function AdminProjectsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-brand-navy">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-brand-navy">
           {t('admin.projects.title')}
         </h1>
         <button
           onClick={handleAddNew}
-          className="px-6 py-3 bg-brand-navy text-white rounded-md hover:bg-opacity-90 transition-colors"
+          className="px-6 py-3 bg-brand-navy text-white rounded-md hover:bg-opacity-90 transition-colors font-medium flex items-center justify-center gap-2"
         >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
           {t('admin.projects.addNew')}
         </button>
       </div>
@@ -702,121 +726,224 @@ export default function AdminProjectsPage() {
             <h2 className="text-2xl font-bold text-brand-navy mb-4">
               {t('admin.projects.noProjects')}
             </h2>
-            <p className="text-brand-gray max-w-md mx-auto">
+            <p className="text-brand-gray max-w-md mx-auto mb-6">
               {t('admin.projects.noProjectsDesc')}
             </p>
+            <button
+              onClick={handleAddNew}
+              className="px-6 py-3 bg-brand-navy text-white rounded-md hover:bg-opacity-90 transition-colors"
+            >
+              {t('admin.projects.addNew')}
+            </button>
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('admin.projects.table.title')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('admin.projects.table.type')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('admin.projects.table.status')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('admin.projects.table.customer')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('admin.projects.table.progress')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('admin.projects.table.budget')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('admin.projects.table.published')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('admin.projects.table.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {projects.map((project) => (
-                  <tr key={project.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        {project.thumbnailImage && (
-                          <img
-                            src={project.thumbnailImage}
-                            alt={project.title}
-                            className="w-10 h-10 rounded object-cover mr-3"
-                          />
-                        )}
-                        <div>
-                          <div className="text-sm font-medium text-brand-navy">
-                            {project.title}
-                          </div>
-                          {project.location && (
-                            <div className="text-xs text-gray-500">
-                              {project.location}
-                            </div>
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('admin.projects.table.title')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('admin.projects.table.type')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('admin.projects.table.status')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('admin.projects.table.customer')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('admin.projects.table.progress')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('admin.projects.table.budget')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('admin.projects.table.published')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {t('admin.projects.table.actions')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {projects.map((project) => (
+                    <tr key={project.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center">
+                          {project.thumbnailImage && (
+                            <img
+                              src={project.thumbnailImage}
+                              alt={project.title}
+                              className="w-12 h-12 rounded object-cover mr-3 flex-shrink-0"
+                            />
                           )}
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-brand-navy truncate">
+                              {project.title}
+                            </div>
+                            {project.location && (
+                              <div className="text-xs text-gray-500 truncate">
+                                📍 {project.location}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-gray">
-                      {getTypeLabel(project.projectType)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-gray">
+                        {getTypeLabel(project.projectType)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                            project.status
+                          )}`}
+                        >
+                          {getStatusLabel(project.status)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-gray">
+                        {project.customer?.fullName || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-brand-gray mb-1">
+                          {project.progressPercent}%
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-brand-gold h-2 rounded-full transition-all"
+                            style={{ width: `${project.progressPercent}%` }}
+                          />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-gray">
+                        {formatCurrency(project.budgetTotal)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {project.isPublished ? (
+                          <span className="text-green-600 font-medium">✓ {t('admin.projects.table.yes')}</span>
+                        ) : (
+                          <span className="text-gray-400">✗ {t('admin.projects.table.no')}</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(project)}
+                            className="text-brand-navy hover:text-brand-gold transition-colors"
+                          >
+                            {t('admin.projects.table.edit')}
+                          </button>
+                          <button
+                            onClick={() => handleDelete(project.id)}
+                            className="text-red-600 hover:text-red-900 transition-colors"
+                          >
+                            {t('admin.projects.table.delete')}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile/Tablet Card View */}
+          <div className="lg:hidden space-y-4">
+            {projects.map((project) => (
+              <div key={project.id} className="bg-white rounded-lg shadow-md p-4">
+                {/* Project Header */}
+                <div className="flex gap-3 mb-3">
+                  {project.thumbnailImage && (
+                    <img
+                      src={project.thumbnailImage}
+                      alt={project.title}
+                      className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-brand-navy mb-1 truncate">
+                      {project.title}
+                    </h3>
+                    {project.location && (
+                      <p className="text-sm text-gray-600 mb-2 truncate">
+                        📍 {project.location}
+                      </p>
+                    )}
+                    <div className="flex flex-wrap gap-2">
                       <span
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                        className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
                           project.status
                         )}`}
                       >
                         {getStatusLabel(project.status)}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-gray">
-                      {project.customer?.fullName || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-brand-gray">
-                        {project.progressPercent}%
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                        <div
-                          className="bg-brand-gold h-2 rounded-full"
-                          style={{ width: `${project.progressPercent}%` }}
-                        />
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-gray">
-                      {formatCurrency(project.budgetTotal)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-gray">
-                      {project.isPublished
-                        ? t('admin.projects.table.yes')
-                        : t('admin.projects.table.no')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => handleEdit(project)}
-                        className="text-brand-navy hover:text-brand-gold mr-4"
-                      >
-                        {t('admin.projects.table.edit')}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(project.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        {t('admin.projects.table.delete')}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
+                        {getTypeLabel(project.projectType)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Project Details */}
+                <div className="space-y-2 text-sm mb-3 pb-3 border-b">
+                  {project.customer && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">{t('admin.projects.table.customer')}:</span>
+                      <span className="font-medium text-brand-navy">{project.customer.fullName}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">{t('admin.projects.table.budget')}:</span>
+                    <span className="font-medium">{formatCurrency(project.budgetTotal)}</span>
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-gray-600">{t('admin.projects.table.progress')}:</span>
+                      <span className="font-medium">{project.progressPercent}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-brand-gold h-2 rounded-full transition-all"
+                        style={{ width: `${project.progressPercent}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">{t('admin.projects.table.published')}:</span>
+                    {project.isPublished ? (
+                      <span className="text-green-600 font-medium">✓ {t('admin.projects.table.yes')}</span>
+                    ) : (
+                      <span className="text-gray-400">✗ {t('admin.projects.table.no')}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEdit(project)}
+                    className="flex-1 px-4 py-2 bg-brand-navy text-white rounded-md hover:bg-opacity-90 transition-colors text-sm font-medium"
+                  >
+                    {t('admin.projects.table.edit')}
+                  </button>
+                  <button
+                    onClick={() => handleDelete(project.id)}
+                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
+                  >
+                    {t('admin.projects.table.delete')}
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        </>
       )}
     </div>
   )
