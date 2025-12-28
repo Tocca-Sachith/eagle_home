@@ -22,6 +22,7 @@ export default function HeroImagesPage() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [showUploadForm, setShowUploadForm] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [editingImage, setEditingImage] = useState<HeroImage | null>(null)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
 
@@ -30,6 +31,12 @@ export default function HeroImagesPage() {
   const [altText, setAltText] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string>('')
+
+  // Edit form state
+  const [editTitle, setEditTitle] = useState('')
+  const [editAltText, setEditAltText] = useState('')
+  const [editFile, setEditFile] = useState<File | null>(null)
+  const [editPreviewUrl, setEditPreviewUrl] = useState<string>('')
 
   useEffect(() => {
     fetchHeroImages()
@@ -53,6 +60,15 @@ export default function HeroImagesPage() {
       setFile(selectedFile)
       const url = URL.createObjectURL(selectedFile)
       setPreviewUrl(url)
+    }
+  }
+
+  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0]
+    if (selectedFile) {
+      setEditFile(selectedFile)
+      const url = URL.createObjectURL(selectedFile)
+      setEditPreviewUrl(url)
     }
   }
 
@@ -98,24 +114,78 @@ export default function HeroImagesPage() {
     }
   }
 
-  const handleUpdate = async (id: string, updates: Partial<HeroImage>) => {
-    try {
-      const res = await fetch(`/api/hero-images/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      })
+  const openEditModal = (image: HeroImage) => {
+    setEditingImage(image)
+    setEditTitle(image.title)
+    setEditAltText(image.altText || '')
+    setEditFile(null)
+    setEditPreviewUrl('')
+    setShowEditModal(true)
+  }
 
-      if (!res.ok) {
-        throw new Error('Update failed')
+  const closeEditModal = () => {
+    setShowEditModal(false)
+    setEditingImage(null)
+    setEditTitle('')
+    setEditAltText('')
+    setEditFile(null)
+    setEditPreviewUrl('')
+  }
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingImage || !editTitle) {
+      alert('Title is required')
+      return
+    }
+
+    setUploading(true)
+    try {
+      // If new image file is provided, upload it
+      if (editFile) {
+        const formData = new FormData()
+        formData.append('file', editFile)
+        formData.append('title', editTitle)
+        formData.append('altText', editAltText || editTitle)
+        formData.append('displayOrder', editingImage.displayOrder.toString())
+
+        // Delete old image and create new one
+        await fetch(`/api/hero-images/${editingImage.id}`, {
+          method: 'DELETE',
+        })
+
+        const res = await fetch('/api/hero-images', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!res.ok) {
+          throw new Error('Update failed')
+        }
+      } else {
+        // Update only title and altText
+        const res = await fetch(`/api/hero-images/${editingImage.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: editTitle,
+            altText: editAltText,
+          }),
+        })
+
+        if (!res.ok) {
+          throw new Error('Update failed')
+        }
       }
 
+      closeEditModal()
       fetchHeroImages()
-      setEditingImage(null)
-      alert('Updated successfully!')
+      alert('Image updated successfully!')
     } catch (error) {
       console.error('Error updating:', error)
       alert('Update failed')
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -142,7 +212,22 @@ export default function HeroImagesPage() {
   }
 
   const toggleActive = async (id: string, currentActive: boolean) => {
-    await handleUpdate(id, { isActive: !currentActive })
+    try {
+      const res = await fetch(`/api/hero-images/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !currentActive }),
+      })
+
+      if (!res.ok) {
+        throw new Error('Update failed')
+      }
+
+      fetchHeroImages()
+    } catch (error) {
+      console.error('Error toggling active:', error)
+      alert('Failed to update status')
+    }
   }
 
   const handleDragStart = (index: number) => {
@@ -300,6 +385,112 @@ export default function HeroImagesPage() {
         </div>
       )}
 
+      {/* Edit Modal */}
+      {showEditModal && editingImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Edit Hero Image</h2>
+                <button
+                  onClick={closeEditModal}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdate} className="space-y-4">
+                {/* Current Image */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Current Image
+                  </label>
+                  <div className="relative w-full h-48">
+                    <Image
+                      src={editingImage.imagePath}
+                      alt={editingImage.title}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                {/* New Image Upload */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Replace Image (Optional)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleEditFileChange}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-navy file:text-white hover:file:bg-opacity-90"
+                  />
+                  {editPreviewUrl && (
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-600 mb-2">New Image Preview:</p>
+                      <img
+                        src={editPreviewUrl}
+                        alt="Preview"
+                        className="max-w-md rounded-lg shadow"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Title *
+                    </label>
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Alt Text
+                    </label>
+                    <input
+                      type="text"
+                      value={editAltText}
+                      onChange={(e) => setEditAltText(e.target.value)}
+                      placeholder="Title will be used if empty"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={closeEditModal}
+                    className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={uploading}
+                    className="px-6 py-2 bg-brand-navy text-white rounded-lg hover:bg-opacity-90 disabled:opacity-50"
+                  >
+                    {uploading ? 'Updating...' : 'Update Image'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero Images List */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {heroImages.length === 0 ? (
@@ -360,45 +551,16 @@ export default function HeroImagesPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      {editingImage?.id === image.id ? (
-                        <div className="space-y-2">
-                          <input
-                            type="text"
-                            value={editingImage.title}
-                            onChange={(e) =>
-                              setEditingImage({
-                                ...editingImage,
-                                title: e.target.value,
-                              })
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy"
-                            placeholder="Title"
-                          />
-                          <input
-                            type="text"
-                            value={editingImage.altText || ''}
-                            onChange={(e) =>
-                              setEditingImage({
-                                ...editingImage,
-                                altText: e.target.value,
-                              })
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy"
-                            placeholder="Alt text"
-                          />
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {image.title}
                         </div>
-                      ) : (
-                        <div>
-                          <div className="font-medium text-gray-900">
-                            {image.title}
+                        {image.altText && (
+                          <div className="text-sm text-gray-500">
+                            ALT: {image.altText}
                           </div>
-                          {image.altText && (
-                            <div className="text-sm text-gray-500">
-                              ALT: {image.altText}
-                            </div>
-                          )}
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
@@ -413,42 +575,18 @@ export default function HeroImagesPage() {
                       </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      {editingImage?.id === image.id ? (
-                        <>
-                          <button
-                            onClick={() =>
-                              handleUpdate(image.id, {
-                                title: editingImage.title,
-                                altText: editingImage.altText,
-                              })
-                            }
-                            className="text-green-600 hover:text-green-900"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={() => setEditingImage(null)}
-                            className="text-gray-600 hover:text-gray-900"
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => setEditingImage(image)}
-                            className="text-brand-navy hover:text-blue-900"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(image.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Delete
-                          </button>
-                        </>
-                      )}
+                      <button
+                        onClick={() => openEditModal(image)}
+                        className="text-brand-navy hover:text-blue-900"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(image.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
