@@ -3,6 +3,16 @@ import * as bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
+// Generate customer number in format: CUS-YYYYMMDD-XXX
+function generateCustomerNumber(index: number): string {
+  const date = new Date()
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const sequence = String(index + 1).padStart(3, '0')
+  return `CUS-${year}${month}${day}-${sequence}`
+}
+
 async function main() {
   console.log('🌱 Starting seed...')
 
@@ -139,26 +149,62 @@ async function main() {
   const customers = await Promise.all([
     prisma.customer.create({
       data: {
+        customerNumber: generateCustomerNumber(0),
         fullName: 'James Wilson',
         email: 'james.wilson@example.com',
         phone: '+1 (555) 234-5678',
+        address: '123 Oak Street, Los Angeles, CA 90001',
         country: 'United States',
+        isOverseas: false,
+        notes: 'VIP client - prefers email communication',
       },
     }),
     prisma.customer.create({
       data: {
+        customerNumber: generateCustomerNumber(1),
         fullName: 'Sophie Taylor',
         email: 'sophie.taylor@example.uk',
         phone: '+44 20 7234 5678',
+        address: '45 Baker Street, London W1U 6AA',
         country: 'United Kingdom',
+        isOverseas: true,
+        notes: 'Building from overseas - requires video updates',
       },
     }),
     prisma.customer.create({
       data: {
+        customerNumber: generateCustomerNumber(2),
         fullName: 'Hiroshi Tanaka',
         email: 'h.tanaka@example.jp',
         phone: '+81 90 1234 5678',
+        address: '1-2-3 Shibuya, Tokyo 150-0002',
         country: 'Japan',
+        isOverseas: true,
+        notes: 'Prefers Japanese language support',
+      },
+    }),
+    prisma.customer.create({
+      data: {
+        customerNumber: generateCustomerNumber(3),
+        fullName: 'Maria Rodriguez',
+        email: 'maria.rodriguez@example.com',
+        phone: '+1 (555) 345-6789',
+        address: '789 Maple Avenue, Miami, FL 33101',
+        country: 'United States',
+        isOverseas: false,
+        notes: 'Interested in eco-friendly construction',
+      },
+    }),
+    prisma.customer.create({
+      data: {
+        customerNumber: generateCustomerNumber(4),
+        fullName: 'David Kim',
+        email: 'david.kim@example.kr',
+        phone: '+82 10 2345 6789',
+        address: '567 Gangnam-gu, Seoul 06000',
+        country: 'South Korea',
+        isOverseas: true,
+        notes: 'Multiple property investments',
       },
     }),
   ])
