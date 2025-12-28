@@ -52,13 +52,21 @@ echo ✓ Prisma Client生成完了
 
 echo.
 echo ステップ 4: マイグレーション実行...
-call npx prisma migrate dev --name init
+call npx prisma migrate dev --name add_customer_management
 if %errorlevel% neq 0 (
     echo ✗ マイグレーション失敗
     echo.
+    echo 【解決方法】
+    echo.
     echo もし「マイグレーションが既に存在する」というエラーの場合:
+    echo   1. npx prisma migrate status で状態を確認
+    echo   2. npx prisma migrate deploy で適用
+    echo.
+    echo もしデータベースをリセットしたい場合（データが削除されます）:
     echo   npx prisma migrate reset --force
-    echo を実行してから、もう一度このスクリプトを実行してください
+    echo   その後、もう一度このスクリプトを実行してください
+    echo.
+    echo 詳細は SEED_ERROR_FIX_JP.md をご覧ください
     echo.
     pause
     exit /b 1
