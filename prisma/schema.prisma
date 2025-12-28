@@ -61,19 +61,62 @@ model Customer {
 model Project {
   id              String   @id @default(cuid())
   title           String
+  description     String?  @db.Text
   location        String?
   projectType     String
-  status          String   @default("PLANNING")
+  status          String   @default("PLANNING") // PLANNING, IN_PROGRESS, COMPLETED, ON_HOLD
+  
+  // Financial
   budgetTotal     Float?
+  actualCost      Float?
+  
+  // Dates
+  contractDate    DateTime?
   startDate       DateTime?
   endDatePlanned  DateTime?
-  createdAt       DateTime @default(now())
-
+  actualEndDate   DateTime?
+  
+  // Relationships
   customerId      String?
   customer        Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  
+  investorName    String?
+  investorContact String?
+  
+  // Display on homepage
+  thumbnailImage  String?  // Main thumbnail for homepage
+  isPublished     Boolean  @default(false) // Show on homepage
+  displayOrder    Int      @default(0)
+  
+  // Progress tracking
+  progressPercent Int      @default(0)
+  currentPhase    String?  // e.g., "Foundation", "Framing", "Finishing"
+  notes           String?  @db.Text
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  images          ProjectImage[]
 
   @@index([status])
   @@index([createdAt])
+  @@index([isPublished])
+  @@index([displayOrder])
+}
+
+model ProjectImage {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  imagePath   String
+  caption     String?
+  phase       String?  // e.g., "Before", "During", "After", "Foundation", "Framing"
+  displayOrder Int     @default(0)
+  uploadedAt  DateTime @default(now())
+  
+  @@index([projectId])
+  @@index([displayOrder])
 }
 
 model HeroImage {

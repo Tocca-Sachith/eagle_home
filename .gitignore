@@ -50,3 +50,5 @@ prisma/dev.db
 !/public/uploads/hero-images/.gitkeep
 /public/uploads/services/*
 !/public/uploads/services/.gitkeep
+/public/uploads/projects/*
+!/public/uploads/projects/.gitkeep
