@@ -25,7 +25,7 @@ export default function Header() {
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative w-[180px] h-[50px]">
               <Image 
-                src="/logo.svg" 
+                src="/logo.png" 
                 alt="Eagle Home & Construction" 
                 fill
                 className="object-contain"

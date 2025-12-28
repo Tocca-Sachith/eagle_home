@@ -18,12 +18,9 @@ export const metadata: Metadata = {
   title: "Eagle Home & Construction - Building Your Dreams",
   description: "Professional construction services with full support for overseas clients. From land acquisition to turnkey delivery.",
   icons: {
-    icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', sizes: '32x32' }
-    ],
+    icon: '/favicon.ico',
     shortcut: '/favicon.ico',
-    apple: '/favicon.svg',
+    apple: '/favicon.ico',
   },
 };
 

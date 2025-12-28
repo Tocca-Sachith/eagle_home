@@ -19,10 +19,10 @@ export default function Footer() {
             <Link href="/" className="inline-block mb-6">
               <div className="relative w-[180px] h-[50px]">
                 <Image 
-                  src="/logo.svg" 
+                  src="/logo.png" 
                   alt="Eagle Home & Construction" 
                   fill
-                  className="object-contain brightness-0 invert"
+                  className="object-contain"
                   priority
                 />
               </div>
