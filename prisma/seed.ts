@@ -8,6 +8,8 @@ async function main() {
 
   // Clear existing data
   console.log('🗑️  Clearing existing data...')
+  await prisma.service.deleteMany()
+  await prisma.heroImage.deleteMany()
   await prisma.inquiry.deleteMany()
   await prisma.project.deleteMany()
   await prisma.customer.deleteMany()
@@ -223,6 +225,123 @@ async function main() {
   ])
 
   console.log(`✅ Created ${projects.length} projects`)
+
+  // Seed Hero Images
+  console.log('🖼️  Seeding hero images...')
+  const heroImages = await Promise.all([
+    prisma.heroImage.create({
+      data: {
+        title: 'Modern Family Home',
+        imagePath: '/images/hero/modern-home.jpg',
+        altText: 'Beautiful modern family home with spacious garden',
+        width: 1920,
+        height: 1080,
+        displayOrder: 0,
+        isActive: true,
+      },
+    }),
+    prisma.heroImage.create({
+      data: {
+        title: 'Luxury Villa Construction',
+        imagePath: '/images/hero/luxury-villa.jpg',
+        altText: 'Luxury villa under construction with ocean view',
+        width: 1920,
+        height: 1080,
+        displayOrder: 1,
+        isActive: true,
+      },
+    }),
+    prisma.heroImage.create({
+      data: {
+        title: 'Contemporary Architecture',
+        imagePath: '/images/hero/contemporary.jpg',
+        altText: 'Contemporary architectural design with clean lines',
+        width: 1920,
+        height: 1080,
+        displayOrder: 2,
+        isActive: true,
+      },
+    }),
+  ])
+
+  console.log(`✅ Created ${heroImages.length} hero images`)
+
+  // Seed Services
+  console.log('🔧 Seeding services...')
+  const services = await Promise.all([
+    prisma.service.create({
+      data: {
+        title: 'Build on Your Land',
+        description: 'Already own a perfect plot? We specialize in building custom homes on client-owned land. Our team handles all aspects from design to completion, ensuring your property is transformed into the home of your dreams.\n\n• Custom home design\n• Site assessment and preparation\n• Full construction management\n• Quality materials and craftsmanship',
+        category: 'construction',
+        icon: '🏗️',
+        displayOrder: 0,
+        isActive: true,
+      },
+    }),
+    prisma.service.create({
+      data: {
+        title: 'Land Purchase + Build Package',
+        description: "Don't have land yet? No problem. We assist in finding and acquiring the ideal property for your needs, followed by complete construction services. One team, one vision, seamless execution.\n\n• Land sourcing and evaluation\n• Due diligence and legal support\n• Integrated design and build\n• Single point of contact",
+        category: 'construction',
+        icon: '🏞️',
+        displayOrder: 1,
+        isActive: true,
+      },
+    }),
+    prisma.service.create({
+      data: {
+        title: 'Design & Planning Services',
+        description: 'Professional architectural design and planning services to create approval-ready plans. Our experienced designers work closely with you to create functional, beautiful spaces that meet all regulatory requirements.\n\n• Architectural design\n• Engineering plans\n• Permit acquisition support\n• 3D visualization',
+        category: 'design',
+        icon: '📐',
+        displayOrder: 2,
+        isActive: true,
+      },
+    }),
+    prisma.service.create({
+      data: {
+        title: 'Renovation & Remodeling',
+        description: 'Transform your existing space with our comprehensive renovation services. From minor updates to complete overhauls, we breathe new life into your property while respecting its character.\n\n• Kitchen and bathroom remodels\n• Home additions and extensions\n• Interior redesign\n• Structural improvements',
+        category: 'renovation',
+        icon: '🔨',
+        displayOrder: 3,
+        isActive: true,
+      },
+    }),
+    prisma.service.create({
+      data: {
+        title: 'Turnkey Delivery',
+        description: 'Move into a completely finished home with our turnkey delivery service. Every detail is handled - from foundation to furnishing - so you can simply unlock the door and start living.\n\n• Complete construction\n• Interior finishing\n• Landscaping\n• Ready-to-move-in condition',
+        category: 'construction',
+        icon: '🔑',
+        displayOrder: 4,
+        isActive: true,
+      },
+    }),
+    prisma.service.create({
+      data: {
+        title: 'Financing & Payment Support',
+        description: 'We understand that building a home is a significant investment. Our financing support includes flexible monthly payment plans and introductions to trusted banking partners to make your dream achievable.\n\n• Flexible payment plans\n• Bank introductions\n• Loan application support\n• Budget planning assistance',
+        category: 'financing',
+        icon: '💰',
+        displayOrder: 5,
+        isActive: true,
+      },
+    }),
+    prisma.service.create({
+      data: {
+        title: 'Consultation Services',
+        description: 'Expert consultation to guide you through every phase of your construction project. From initial concept to final delivery, our consultants provide professional advice to ensure successful outcomes.\n\n• Project feasibility analysis\n• Budget estimation\n• Timeline planning\n• Risk assessment',
+        category: 'consultation',
+        icon: '💼',
+        displayOrder: 6,
+        isActive: true,
+      },
+    }),
+  ])
+
+  console.log(`✅ Created ${services.length} services`)
   console.log('🎉 Seed completed successfully!')
 }
 
