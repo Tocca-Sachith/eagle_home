@@ -85,3 +85,21 @@ model HeroImage {
   @@index([isActive])
   @@index([displayOrder])
 }
+
+model Service {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  category    String   // e.g., "construction", "design", "consultation"
+  icon        String?  // Emoji or icon identifier
+  imagePath   String?  // Optional service image
+  displayOrder Int     @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([category])
+  @@index([displayOrder])
+}
+

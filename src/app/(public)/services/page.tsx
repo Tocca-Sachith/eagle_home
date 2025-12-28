@@ -1,74 +1,38 @@
-import Link from 'next/link';
+'use client'
+
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+
+interface Service {
+  id: string
+  title: string
+  description: string
+  category: string
+  icon: string | null
+  imagePath: string | null
+  displayOrder: number
+}
 
 export default function ServicesPage() {
-  const services = [
-    {
-      title: 'Build on Your Land',
-      description: 'Already own a perfect plot? We specialize in building custom homes on client-owned land. Our team handles all aspects from design to completion, ensuring your property is transformed into the home of your dreams.',
-      features: [
-        'Custom home design',
-        'Site assessment and preparation',
-        'Full construction management',
-        'Quality materials and craftsmanship',
-      ],
-      icon: '🏗️',
-    },
-    {
-      title: 'Land Purchase + Build Package',
-      description: 'Don\'t have land yet? No problem. We assist in finding and acquiring the ideal property for your needs, followed by complete construction services. One team, one vision, seamless execution.',
-      features: [
-        'Land sourcing and evaluation',
-        'Due diligence and legal support',
-        'Integrated design and build',
-        'Single point of contact',
-      ],
-      icon: '🏞️',
-    },
-    {
-      title: 'Renovation & Remodeling',
-      description: 'Transform your existing space with our comprehensive renovation services. From minor updates to complete overhauls, we breathe new life into your property while respecting its character.',
-      features: [
-        'Kitchen and bathroom remodels',
-        'Home additions and extensions',
-        'Interior redesign',
-        'Structural improvements',
-      ],
-      icon: '🔨',
-    },
-    {
-      title: 'Design & Planning Services',
-      description: 'Professional architectural design and planning services to create approval-ready plans. Our experienced designers work closely with you to create functional, beautiful spaces that meet all regulatory requirements.',
-      features: [
-        'Architectural design',
-        'Engineering plans',
-        'Permit acquisition support',
-        '3D visualization',
-      ],
-      icon: '📐',
-    },
-    {
-      title: 'Turnkey Delivery',
-      description: 'Move into a completely finished home with our turnkey delivery service. Every detail is handled - from foundation to furnishing - so you can simply unlock the door and start living.',
-      features: [
-        'Complete construction',
-        'Interior finishing',
-        'Landscaping',
-        'Ready-to-move-in condition',
-      ],
-      icon: '🔑',
-    },
-    {
-      title: 'Financing & Payment Support',
-      description: 'We understand that building a home is a significant investment. Our financing support includes flexible monthly payment plans and introductions to trusted banking partners to make your dream achievable.',
-      features: [
-        'Flexible payment plans',
-        'Bank introductions',
-        'Loan application support',
-        'Budget planning assistance',
-      ],
-      icon: '💰',
-    },
-  ];
+  const [services, setServices] = useState<Service[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchServices()
+  }, [])
+
+  const fetchServices = async () => {
+    try {
+      const res = await fetch('/api/services')
+      const data = await res.json()
+      setServices(data.services || [])
+    } catch (error) {
+      console.error('Error fetching services:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div>
@@ -87,46 +51,59 @@ export default function ServicesPage() {
       {/* Services Grid */}
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="space-y-16">
-            {services.map((service, index) => (
-              <div
-                key={index}
-                className={`flex flex-col lg:flex-row gap-8 items-center ${
-                  index % 2 === 1 ? 'lg:flex-row-reverse' : ''
-                }`}
-              >
-                <div className="lg:w-1/3">
-                  <div className="text-8xl text-center lg:text-left">{service.icon}</div>
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Loading services...</p>
+            </div>
+          ) : services.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">No services available at the moment.</p>
+            </div>
+          ) : (
+            <div className="space-y-16">
+              {services.map((service, index) => (
+                <div
+                  key={service.id}
+                  className={`flex flex-col lg:flex-row gap-8 items-center ${
+                    index % 2 === 1 ? 'lg:flex-row-reverse' : ''
+                  }`}
+                >
+                  <div className="lg:w-1/3">
+                    {service.imagePath ? (
+                      <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden shadow-lg">
+                        <Image
+                          src={service.imagePath}
+                          alt={service.title}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-8xl text-center lg:text-left">
+                        {service.icon || '📋'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="lg:w-2/3">
+                    <div className="flex items-center gap-3 mb-4">
+                      {service.icon && !service.imagePath && (
+                        <div className="text-4xl">{service.icon}</div>
+                      )}
+                      <h2 className="text-3xl font-bold text-brand-navy">
+                        {service.title}
+                      </h2>
+                    </div>
+                    <p className="text-lg text-brand-gray mb-6 whitespace-pre-wrap">
+                      {service.description}
+                    </p>
+                    <span className="inline-block px-3 py-1 bg-brand-gold/20 text-brand-navy text-sm font-medium rounded-full">
+                      {service.category.charAt(0).toUpperCase() + service.category.slice(1)}
+                    </span>
+                  </div>
                 </div>
-                <div className="lg:w-2/3">
-                  <h2 className="text-3xl font-bold text-brand-navy mb-4">
-                    {service.title}
-                  </h2>
-                  <p className="text-lg text-brand-gray mb-6">
-                    {service.description}
-                  </p>
-                  <ul className="space-y-2">
-                    {service.features.map((feature, fIndex) => (
-                      <li key={fIndex} className="flex items-center gap-3">
-                        <svg
-                          className="w-5 h-5 text-brand-gold flex-shrink-0"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        <span className="text-brand-gray">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -182,7 +159,7 @@ export default function ServicesPage() {
       <section className="py-20">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold text-brand-navy mb-6">
-            Let's Discuss Your Project
+            Let&apos;s Discuss Your Project
           </h2>
           <p className="text-xl text-brand-gray mb-8 max-w-2xl mx-auto">
             Every project is unique. Contact us to discuss how our services can be tailored to your specific needs.
@@ -196,5 +173,5 @@ export default function ServicesPage() {
         </div>
       </section>
     </div>
-  );
+  )
 }
