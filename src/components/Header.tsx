@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -21,8 +22,16 @@ export default function Header() {
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
-          <Link href="/" className="text-2xl font-bold text-brand-navy">
-            {t('header.companyName')}
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="relative w-[180px] h-[50px]">
+              <Image 
+                src="/logo.svg" 
+                alt="Eagle Home & Construction" 
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
           </Link>
           
           <nav className="hidden md:flex items-center gap-8">

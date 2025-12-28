@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Footer() {
@@ -13,17 +14,33 @@ export default function Footer() {
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-          {/* Company Info */}
+          {/* Company Info with Logo */}
           <div className="lg:col-span-2">
-            <h3 className="text-2xl font-bold mb-4 text-brand-gold">
-              {t('header.companyName')}
-            </h3>
-            <p className="text-gray-300 mb-6 leading-relaxed">
-              {t('footer.description')}
-            </p>
-            <p className="text-sm text-gray-400">
-              {t('footer.availableFor')}
-            </p>
+            <Link href="/" className="inline-block mb-6">
+              <div className="relative w-[180px] h-[50px]">
+                <Image 
+                  src="/logo.svg" 
+                  alt="Eagle Home & Construction" 
+                  fill
+                  className="object-contain brightness-0 invert"
+                  priority
+                />
+              </div>
+            </Link>
+            <div className="space-y-4">
+              <p className="text-gray-300 leading-relaxed text-sm">
+                {t('footer.description')}
+              </p>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                {t('footer.companyDetails')}
+              </p>
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <svg className="w-4 h-4 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{t('footer.availableFor')}</span>
+              </div>
+            </div>
           </div>
           
           {/* Quick Links */}
