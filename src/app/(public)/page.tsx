@@ -23,6 +23,24 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchHeroImages();
+
+    // Auto-refresh hero images every 30 seconds
+    const refreshInterval = setInterval(() => {
+      fetchHeroImages();
+    }, 30000);
+
+    // Refresh when page becomes visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchHeroImages();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(refreshInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -39,7 +57,12 @@ export default function HomePage() {
 
   const fetchHeroImages = async () => {
     try {
-      const res = await fetch('/api/hero-images');
+      const res = await fetch('/api/hero-images', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       const data = await res.json();
       if (data.heroImages && data.heroImages.length > 0) {
         setHeroImages(data.heroImages);
@@ -105,8 +128,8 @@ export default function HomePage() {
                   className="object-cover"
                   priority={index === 0}
                 />
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-brand-navy/80 to-brand-gray/80" />
+                {/* Overlay - Lighter overlay to show more of the image */}
+                <div className="absolute inset-0 bg-gradient-to-r from-brand-navy/40 to-brand-gray/40" />
               </div>
             ))}
           </div>
