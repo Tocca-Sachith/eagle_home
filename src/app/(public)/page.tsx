@@ -313,18 +313,36 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-brand-navy text-white py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-6">{t('home.cta.title')}</h2>
-          <p className="text-xl mb-8 text-gray-300 max-w-2xl mx-auto">
-            {t('home.cta.subtitle')}
-          </p>
-          <Link
-            href="/contact"
-            className="inline-block bg-brand-gold text-brand-navy px-10 py-4 rounded-lg font-semibold hover:bg-yellow-500 transition-colors text-lg"
-          >
-            {t('home.cta.button')}
-          </Link>
+      <section className="relative bg-gradient-to-r from-brand-gold to-yellow-500 text-brand-navy py-20 overflow-hidden">
+        {/* Decorative Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-64 h-64 bg-brand-navy rounded-full -translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-brand-navy rounded-full translate-x-1/2 translate-y-1/2" />
+        </div>
+        
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="max-w-3xl mx-auto">
+            <div className="inline-block mb-6">
+              <div className="flex items-center justify-center w-20 h-20 bg-brand-navy rounded-full mx-auto mb-6">
+                <svg className="w-10 h-10 text-brand-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">{t('home.cta.title')}</h2>
+            <p className="text-xl mb-10 text-gray-800 leading-relaxed">
+              {t('home.cta.subtitle')}
+            </p>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-3 bg-brand-navy text-white px-10 py-4 rounded-lg font-semibold hover:bg-gray-900 transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 text-lg"
+            >
+              <span>{t('home.cta.button')}</span>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+          </div>
         </div>
       </section>
     </div>

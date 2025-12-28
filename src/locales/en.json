@@ -26,7 +26,10 @@
     "email": "Email",
     "phone": "Phone",
     "availableFor": "Available for international clients",
-    "copyright": "Eagle Home & Construction. All rights reserved."
+    "followUs": "Follow Us",
+    "copyright": "Eagle Home & Construction. All rights reserved.",
+    "privacyPolicy": "Privacy Policy",
+    "termsConditions": "Terms & Conditions"
   },
   "home": {
     "hero": {
@@ -323,6 +326,95 @@
       "title": "Ready to Start Your Project?",
       "subtitle": "Let's discuss how we can bring your vision to life. Contact us today for a free consultation.",
       "button": "Get in Touch"
+    }
+  },
+  "privacyPolicy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last Updated",
+    "introduction": {
+      "title": "Introduction",
+      "content": "Eagle Home & Construction (\"we,\" \"our,\" or \"us\") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or use our services."
+    },
+    "informationCollect": {
+      "title": "Information We Collect",
+      "intro": "We collect information that you provide directly to us, including:",
+      "item1": "Personal Information: Name, email address, phone number, mailing address",
+      "item2": "Project Information: Details about your construction project, budget, timeline, and requirements",
+      "item3": "Communication Records: Correspondence, inquiries, and feedback",
+      "item4": "Technical Data: IP address, browser type, device information, and website usage data"
+    },
+    "howWeUse": {
+      "title": "How We Use Your Information",
+      "item1": "To provide and improve our construction services",
+      "item2": "To communicate with you about projects, quotes, and updates",
+      "item3": "To process payments and manage contracts",
+      "item4": "To comply with legal obligations and protect our rights"
+    },
+    "informationSharing": {
+      "title": "Information Sharing and Disclosure",
+      "content": "We do not sell, trade, or rent your personal information to third parties. We may share your information with trusted service providers who assist us in operating our business, conducting our services, or serving our clients, as long as those parties agree to keep this information confidential."
+    },
+    "dataSecurity": {
+      "title": "Data Security",
+      "content": "We implement appropriate technical and organizational security measures to protect your personal information against unauthorized or unlawful processing, accidental loss, destruction, or damage. However, no method of transmission over the internet or electronic storage is 100% secure."
+    },
+    "yourRights": {
+      "title": "Your Rights",
+      "item1": "Access: Request access to your personal information",
+      "item2": "Correction: Request correction of inaccurate or incomplete information",
+      "item3": "Deletion: Request deletion of your personal information",
+      "item4": "Objection: Object to processing of your personal information"
+    },
+    "contact": {
+      "title": "Contact Us",
+      "content": "If you have any questions about this Privacy Policy or our privacy practices, please contact us:"
+    }
+  },
+  "termsConditions": {
+    "title": "Terms & Conditions",
+    "lastUpdated": "Last Updated",
+    "agreement": {
+      "title": "Agreement to Terms",
+      "content": "By accessing or using the services of Eagle Home & Construction, you agree to be bound by these Terms and Conditions. If you disagree with any part of these terms, you may not access our services."
+    },
+    "services": {
+      "title": "Our Services",
+      "intro": "Eagle Home & Construction provides comprehensive construction services including:",
+      "item1": "Residential and commercial construction",
+      "item2": "Design and planning services",
+      "item3": "Renovation and remodeling",
+      "item4": "Project management and consultation"
+    },
+    "clientResponsibilities": {
+      "title": "Client Responsibilities",
+      "item1": "Provide accurate and complete information about project requirements",
+      "item2": "Obtain necessary permits and approvals as required by local authorities",
+      "item3": "Make timely payments according to the agreed payment schedule",
+      "item4": "Provide site access and cooperate with construction activities"
+    },
+    "paymentTerms": {
+      "title": "Payment Terms",
+      "content": "Payment terms will be specified in individual project contracts. Generally, payments are structured in phases based on project milestones. Late payments may incur additional charges as specified in the contract."
+    },
+    "projectTimeline": {
+      "title": "Project Timeline",
+      "content": "Project timelines are estimates based on normal working conditions. Actual completion dates may vary due to weather, material availability, permit delays, or changes to project scope. We will communicate any significant delays promptly."
+    },
+    "warranties": {
+      "title": "Warranties and Guarantees",
+      "content": "We stand behind the quality of our work. Specific warranties will be outlined in your project contract. We use quality materials and follow industry best practices to ensure durable, long-lasting results."
+    },
+    "limitation": {
+      "title": "Limitation of Liability",
+      "content": "To the fullest extent permitted by law, Eagle Home & Construction shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or relating to your use of our services."
+    },
+    "termination": {
+      "title": "Termination",
+      "content": "Either party may terminate a project contract under conditions specified in the individual agreement. Termination terms, including payment for work completed and materials purchased, will be outlined in your project contract."
+    },
+    "contact": {
+      "title": "Contact Information",
+      "content": "For questions about these Terms and Conditions, please contact us:"
     }
   },
   "admin": {
