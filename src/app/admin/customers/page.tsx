@@ -221,19 +221,19 @@ export default function AdminCustomersPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8 flex justify-between items-center">
+    <div className="p-4 md:p-8">
+      <div className="mb-6 md:mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-brand-navy">
+          <h1 className="text-2xl md:text-3xl font-bold text-brand-navy">
             Customers Management
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-600 mt-2 text-sm md:text-base">
             Manage customer information and contact details
           </p>
         </div>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
-          className="px-6 py-3 bg-brand-navy text-white rounded-lg hover:bg-opacity-90 transition-colors"
+          className="px-4 md:px-6 py-2 md:py-3 bg-brand-navy text-white rounded-lg hover:bg-opacity-90 transition-colors text-sm md:text-base whitespace-nowrap"
         >
           {showCreateForm ? 'Cancel' : '+ Add New Customer'}
         </button>
@@ -241,32 +241,34 @@ export default function AdminCustomersPage() {
 
       {/* Search Bar */}
       <div className="mb-6">
-        <form onSubmit={handleSearch} className="flex gap-2">
+        <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name, email, phone, or customer number..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent text-sm"
           />
-          <button
-            type="submit"
-            className="px-6 py-2 bg-brand-navy text-white rounded-lg hover:bg-opacity-90"
-          >
-            Search
-          </button>
-          {searchQuery && (
+          <div className="flex gap-2">
             <button
-              type="button"
-              onClick={() => {
-                setSearchQuery('')
-                fetchCustomers()
-              }}
-              className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+              type="submit"
+              className="flex-1 sm:flex-none px-6 py-2 bg-brand-navy text-white rounded-lg hover:bg-opacity-90 text-sm whitespace-nowrap"
             >
-              Clear
+              Search
             </button>
-          )}
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery('')
+                  fetchCustomers()
+                }}
+                className="flex-1 sm:flex-none px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 text-sm whitespace-nowrap"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </form>
       </div>
 
@@ -530,104 +532,180 @@ export default function AdminCustomersPage() {
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Customer #
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contact
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Location
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Projects
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {customers.map((customer) => (
-                  <tr key={customer.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="font-mono text-sm font-medium text-brand-navy">
-                        {customer.customerNumber}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="font-medium text-gray-900">
-                          {customer.fullName}
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Customer #
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Contact
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Location
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Projects
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {customers.map((customer) => (
+                    <tr key={customer.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className="font-mono text-xs font-medium text-brand-navy">
+                          {customer.customerNumber}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="max-w-[200px]">
+                          <div className="font-medium text-gray-900 text-sm truncate">
+                            {customer.fullName}
+                          </div>
+                          {customer.isOverseas && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                              🌍 Overseas
+                            </span>
+                          )}
                         </div>
-                        {customer.isOverseas && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">
-                            🌍 Overseas
-                          </span>
-                        )}
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-xs max-w-[180px]">
+                          {customer.email && (
+                            <div className="text-gray-900 truncate" title={customer.email}>{customer.email}</div>
+                          )}
+                          {customer.phone && (
+                            <div className="text-gray-500 truncate">{customer.phone}</div>
+                          )}
+                          {!customer.email && !customer.phone && (
+                            <span className="text-gray-400">No contact</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-xs max-w-[200px]">
+                          {customer.address && (
+                            <div className="text-gray-900 mb-1 truncate" title={customer.address}>{customer.address}</div>
+                          )}
+                          {customer.country && (
+                            <div className="text-gray-500 truncate">{customer.country}</div>
+                          )}
+                          {!customer.address && !customer.country && (
+                            <span className="text-gray-400">No address</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">
+                          {customer.projects.length} project{customer.projects.length !== 1 ? 's' : ''}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-xs font-medium">
+                        <div className="flex flex-col gap-1">
+                          <button
+                            onClick={() => openEditModal(customer)}
+                            className="text-brand-navy hover:text-blue-900 text-left"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(customer.id, customer.projects.length > 0)}
+                            className="text-red-600 hover:text-red-900 text-left"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="lg:hidden divide-y divide-gray-200">
+              {customers.map((customer) => (
+                <div key={customer.id} className="p-4 hover:bg-gray-50">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-brand-navy text-base truncate">
+                        {customer.fullName}
+                      </h3>
+                      <p className="text-xs text-gray-500 font-mono mt-1">
+                        {customer.customerNumber}
+                      </p>
+                    </div>
+                    {customer.isOverseas && (
+                      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 ml-2 whitespace-nowrap">
+                        🌍 Overseas
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 text-sm mb-3">
+                    {customer.email && (
+                      <div className="flex items-start">
+                        <span className="text-gray-500 w-20 flex-shrink-0">Email:</span>
+                        <span className="text-gray-900 break-all">{customer.email}</span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm">
-                        {customer.email && (
-                          <div className="text-gray-900">{customer.email}</div>
-                        )}
-                        {customer.phone && (
-                          <div className="text-gray-500">{customer.phone}</div>
-                        )}
-                        {!customer.email && !customer.phone && (
-                          <span className="text-gray-400">No contact</span>
-                        )}
+                    )}
+                    {customer.phone && (
+                      <div className="flex items-start">
+                        <span className="text-gray-500 w-20 flex-shrink-0">Phone:</span>
+                        <span className="text-gray-900">{customer.phone}</span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm">
-                        {customer.address && (
-                          <div className="text-gray-900 mb-1">{customer.address}</div>
-                        )}
-                        {customer.country && (
-                          <div className="text-gray-500">{customer.country}</div>
-                        )}
-                        {!customer.address && !customer.country && (
-                          <span className="text-gray-400">No address</span>
-                        )}
+                    )}
+                    {customer.address && (
+                      <div className="flex items-start">
+                        <span className="text-gray-500 w-20 flex-shrink-0">Address:</span>
+                        <span className="text-gray-900 break-words">{customer.address}</span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">
+                    )}
+                    {customer.country && (
+                      <div className="flex items-start">
+                        <span className="text-gray-500 w-20 flex-shrink-0">Country:</span>
+                        <span className="text-gray-900">{customer.country}</span>
+                      </div>
+                    )}
+                    <div className="flex items-start">
+                      <span className="text-gray-500 w-20 flex-shrink-0">Projects:</span>
+                      <span className="px-2 py-0.5 bg-gray-100 text-gray-800 text-xs rounded-full">
                         {customer.projects.length} project{customer.projects.length !== 1 ? 's' : ''}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <button
-                        onClick={() => openEditModal(customer)}
-                        className="text-brand-navy hover:text-blue-900"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(customer.id, customer.projects.length > 0)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2 border-t border-gray-100">
+                    <button
+                      onClick={() => openEditModal(customer)}
+                      className="flex-1 px-4 py-2 bg-brand-navy text-white text-sm rounded-lg hover:bg-opacity-90"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(customer.id, customer.projects.length > 0)}
+                      className="flex-1 px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
-      <div className="mt-4 text-sm text-gray-500">
+      <div className="mt-4 text-xs md:text-sm text-gray-500">
         <p>💡 Tip: Customer numbers are automatically generated when you create a new customer</p>
       </div>
     </div>
