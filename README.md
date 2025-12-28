@@ -1,6 +1,6 @@
 # Eagle Home & Construction
 
-A professional construction company website with an admin dashboard for managing customer inquiries. Built with Next.js, TypeScript, Tailwind CSS, and Prisma with SQLite (dev) / MySQL (production).
+A professional construction company website with an admin dashboard for managing customer inquiries. Built with Next.js, TypeScript, Tailwind CSS, and Prisma with MySQL.
 
 ## Features
 
@@ -15,11 +15,13 @@ A professional construction company website with an admin dashboard for managing
 ### Admin Dashboard
 - **Dashboard**: Overview of business metrics
 - **Inquiries**: View and manage customer inquiries from the contact form
-- **User Management**: Complete CRUD operations for users (add, edit, delete, password reset)
-- **Customers**: Customer database (placeholder)
+- **Hero Images**: Manage homepage carousel images with drag-and-drop ordering
+- **Services**: Manage construction services with images and descriptions
+- **Customers**: Complete customer management with auto-generated customer numbers
 - **Projects**: Project management (placeholder)
 - **Finance**: Financial tracking (placeholder)
 - **Reports**: Business analytics (placeholder)
+- **User Management**: Complete CRUD operations for users (add, edit, delete, password reset)
 
 ### Authentication & Security
 - **Login System**: Secure authentication with NextAuth.js
@@ -33,10 +35,11 @@ A professional construction company website with an admin dashboard for managing
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS v4
-- **Database**: SQLite (dev) / MySQL (production)
+- **Database**: MySQL
 - **ORM**: Prisma v6
 - **Authentication**: NextAuth.js v4
 - **Password Hashing**: bcryptjs
+- **Image Processing**: sharp
 - **Deployment**: Ready for Vercel or any Node.js hosting
 
 ## Getting Started
@@ -45,35 +48,39 @@ A professional construction company website with an admin dashboard for managing
 
 - Node.js 20+ installed
 - npm or yarn package manager
-- (Optional) MySQL database for production
+- MySQL Server installed and running
 
 ### Quick Setup (Recommended)
 
+**IMPORTANT:** Before running the setup, you must:
+1. Install and start MySQL Server
+2. Create the database: `CREATE DATABASE eagle_construction;`
+3. Update the `.env` file with your MySQL credentials
+
+See [MYSQL_SETUP_GUIDE.md](./MYSQL_SETUP_GUIDE.md) for detailed instructions.
+
 #### For Windows:
 
-Double-click the setup script:
-
 ```bash
-setup-db.bat
+setup-mysql.bat
 ```
 
 Or in PowerShell:
 
 ```powershell
-.\setup-db.bat
+.\setup-mysql.bat
 ```
 
 #### For macOS/Linux:
 
 ```bash
-./setup-db.sh
+chmod +x setup-mysql.sh
+./setup-mysql.sh
 ```
 
 This will automatically:
-- ✅ Install dependencies
 - ✅ Generate Prisma Client
-- ✅ Set up the database
-- ✅ Run migrations
+- ✅ Run database migrations
 - ✅ Seed sample data (including admin user)
 
 ### Manual Installation
@@ -89,34 +96,45 @@ npm install
 Create a `.env` file in the root directory:
 
 ```env
-# SQLite (Development - Default)
-DATABASE_URL="file:./dev.db"
-
-# Or MySQL (Production)
-# DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE"
+# MySQL Database
+DATABASE_URL="mysql://root:your_password@localhost:3306/eagle_construction"
 
 # NextAuth Configuration
 NEXTAUTH_SECRET="your-secret-key-change-this-in-production"
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
-3. **Generate Prisma Client and set up database:**
+**Note:** Update the DATABASE_URL with your actual MySQL credentials.
+
+3. **Set up MySQL database:**
+
+```bash
+# Create database in MySQL
+mysql -u root -p
+CREATE DATABASE eagle_construction;
+exit;
+```
+
+4. **Generate Prisma Client and set up database:**
 
 ```bash
 # Generate Prisma Client
 npx prisma generate
 
-# Run migrations and seed data
-npx prisma migrate reset --force
+# Run migrations
+npx prisma migrate dev --name init
+
+# Seed sample data
+npm run db:seed
 ```
 
-4. **Start the development server:**
+5. **Start the development server:**
 
 ```bash
 npm run dev
 ```
 
-5. **Login to admin dashboard:**
+6. **Login to admin dashboard:**
 
 Visit [http://localhost:3000/login](http://localhost:3000/login)
 
@@ -127,9 +145,9 @@ Password: admin123
 
 ### Troubleshooting
 
-If you encounter any seed errors, see:
-- **QUICK_SETUP.md** - Quick setup guide
-- **SEED_TROUBLESHOOTING.md** - Detailed troubleshooting
+If you encounter any database errors, see:
+- **MYSQL_SETUP_GUIDE.md** - Comprehensive MySQL setup guide
+- **setup-mysql.bat** (Windows) or **setup-mysql.sh** (Linux/Mac) - Automated setup scripts
 - **USAGE_GUIDE.md** - Complete usage guide
 
 ## Database Schema

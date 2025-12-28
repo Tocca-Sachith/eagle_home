@@ -1,95 +1,60 @@
 @echo off
 echo ========================================
-echo Eagle Home - MySQL Setup (Windows)
+echo Eagle Home MySQL Setup
 echo ========================================
 echo.
 
-echo This script will set up the database with MySQL.
-echo.
-echo Prerequisites:
-echo   - MySQL server must be running
-echo   - .env file must contain valid MySQL connection string
-echo.
-echo Example .env file:
-echo   DATABASE_URL="mysql://root:password@localhost:3306/eagle_construction"
-echo   NEXTAUTH_SECRET="your-secret-key"
-echo   NEXTAUTH_URL="http://localhost:3000"
+echo Checking MySQL connection...
 echo.
 
-set /p CONTINUE="Do you want to continue? (y/n): "
-if /i not "%CONTINUE%"=="y" (
-    echo Setup cancelled.
+REM Check if .env is configured
+findstr /C:"mysql://" .env >nul 2>&1
+if %errorlevel% neq 0 (
+    echo ERROR: DATABASE_URL is not configured for MySQL in .env file
+    echo.
+    echo Please update your .env file with MySQL credentials:
+    echo DATABASE_URL="mysql://username:password@localhost:3306/eagle_construction"
+    echo.
     pause
-    exit /b 0
+    exit /b 1
 )
 
-echo.
-echo [1/3] Generating Prisma Client...
+echo Step 1: Generating Prisma Client...
 call npx prisma generate
 if %errorlevel% neq 0 (
     echo ERROR: Failed to generate Prisma Client
-    echo.
-    echo Please check:
-    echo   1. prisma/schema.prisma file exists
-    echo   2. @prisma/client is installed
     pause
     exit /b 1
 )
-echo Done!
-echo.
 
-echo [2/3] Running migrations...
-call npx prisma migrate deploy
+echo.
+echo Step 2: Creating database and running migrations...
+call npx prisma migrate dev --name init
 if %errorlevel% neq 0 (
-    echo WARNING: migrate deploy failed, trying migrate reset...
-    call npx prisma migrate reset --force
-    if %errorlevel% neq 0 (
-        echo ERROR: Failed to run migrations
-        echo.
-        echo Please check:
-        echo   1. MySQL server is running
-        echo   2. .env file has correct DATABASE_URL
-        echo   3. Database exists or user has permission to create it
-        echo.
-        echo To create database manually:
-        echo   mysql -u root -p
-        echo   CREATE DATABASE eagle_construction;
-        echo   EXIT;
-        pause
-        exit /b 1
-    )
+    echo ERROR: Failed to run migrations
+    echo.
+    echo Common solutions:
+    echo 1. Make sure MySQL server is running
+    echo 2. Verify database credentials in .env
+    echo 3. Ensure database 'eagle_construction' exists
+    echo.
+    pause
+    exit /b 1
 )
-echo Done!
-echo.
 
-echo [3/3] Running seed...
+echo.
+echo Step 3: Seeding database with sample data...
 call npm run db:seed
 if %errorlevel% neq 0 (
-    echo ERROR: Seed failed
-    echo.
-    echo Please check:
-    echo   1. Database connection is working
-    echo   2. Tables were created successfully
-    pause
-    exit /b 1
+    echo WARNING: Seed failed but migration was successful
+    echo You can run 'npm run db:seed' manually later
 )
-echo Done!
-echo.
 
+echo.
 echo ========================================
-echo Setup completed successfully!
+echo Setup Complete!
 echo ========================================
 echo.
-echo Database: MySQL
-echo.
-echo You can now login with:
-echo   Email: admin@eaglehome.com
-echo   Password: admin123
-echo.
-echo Start the development server with:
-echo   npm run dev
-echo.
-echo To view data in Prisma Studio:
-echo   npx prisma studio
+echo You can now run: npm run dev
 echo.
 pause

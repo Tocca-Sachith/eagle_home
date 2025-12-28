@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -95,7 +95,7 @@ model HeroImage {
 model Service {
   id          String   @id @default(cuid())
   title       String
-  description String
+  description String   @db.Text
   category    String   // e.g., "construction", "design", "consultation"
   icon        String?  // Emoji or icon identifier
   imagePath   String?  // Optional service image
