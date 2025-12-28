@@ -23,13 +23,11 @@ export default function HeroImagesPage() {
   const [uploading, setUploading] = useState(false)
   const [showUploadForm, setShowUploadForm] = useState(false)
   const [editingImage, setEditingImage] = useState<HeroImage | null>(null)
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
 
   // Form state
   const [title, setTitle] = useState('')
   const [altText, setAltText] = useState('')
-  const [width, setWidth] = useState('1920')
-  const [height, setHeight] = useState('1080')
-  const [displayOrder, setDisplayOrder] = useState('0')
   const [file, setFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string>('')
 
@@ -71,9 +69,7 @@ export default function HeroImagesPage() {
       formData.append('file', file)
       formData.append('title', title)
       formData.append('altText', altText || title)
-      formData.append('width', width)
-      formData.append('height', height)
-      formData.append('displayOrder', displayOrder)
+      formData.append('displayOrder', heroImages.length.toString())
 
       const res = await fetch('/api/hero-images', {
         method: 'POST',
@@ -87,9 +83,6 @@ export default function HeroImagesPage() {
       // Reset form
       setTitle('')
       setAltText('')
-      setWidth('1920')
-      setHeight('1080')
-      setDisplayOrder('0')
       setFile(null)
       setPreviewUrl('')
       setShowUploadForm(false)
@@ -150,6 +143,53 @@ export default function HeroImagesPage() {
 
   const toggleActive = async (id: string, currentActive: boolean) => {
     await handleUpdate(id, { isActive: !currentActive })
+  }
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index)
+  }
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+  }
+
+  const handleDrop = async (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault()
+    
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null)
+      return
+    }
+
+    const reorderedImages = [...heroImages]
+    const [draggedItem] = reorderedImages.splice(draggedIndex, 1)
+    reorderedImages.splice(dropIndex, 0, draggedItem)
+
+    // Update display order for all affected images
+    const updates = reorderedImages.map((img, idx) => ({
+      id: img.id,
+      displayOrder: idx,
+    }))
+
+    try {
+      // Update all orders in parallel
+      await Promise.all(
+        updates.map((update) =>
+          fetch(`/api/hero-images/${update.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ displayOrder: update.displayOrder }),
+          })
+        )
+      )
+
+      fetchHeroImages()
+    } catch (error) {
+      console.error('Error reordering:', error)
+      alert('順序の変更に失敗しました')
+    }
+
+    setDraggedIndex(null)
   }
 
   if (loading) {
@@ -234,47 +274,6 @@ export default function HeroImagesPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  幅 (px)
-                </label>
-                <input
-                  type="number"
-                  value={width}
-                  onChange={(e) => setWidth(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
-                  min="100"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  高さ (px)
-                </label>
-                <input
-                  type="number"
-                  value={height}
-                  onChange={(e) => setHeight(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
-                  min="100"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  表示順序
-                </label>
-                <input
-                  type="number"
-                  value={displayOrder}
-                  onChange={(e) => setDisplayOrder(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
-                  min="0"
-                />
-              </div>
-            </div>
-
             <div className="flex justify-end space-x-4">
               <button
                 type="button"
@@ -282,6 +281,8 @@ export default function HeroImagesPage() {
                   setShowUploadForm(false)
                   setFile(null)
                   setPreviewUrl('')
+                  setTitle('')
+                  setAltText('')
                 }}
                 className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
               >
@@ -312,16 +313,13 @@ export default function HeroImagesPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    順序
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     プレビュー
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    タイトル
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    サイズ
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    表示順序
+                    タイトル / ALT
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ステータス
@@ -332,8 +330,25 @@ export default function HeroImagesPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {heroImages.map((image) => (
-                  <tr key={image.id}>
+                {heroImages.map((image, index) => (
+                  <tr
+                    key={image.id}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDrop={(e) => handleDrop(e, index)}
+                    className={`cursor-move hover:bg-gray-50 ${
+                      draggedIndex === index ? 'opacity-50' : ''
+                    }`}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"></path>
+                        </svg>
+                        <span className="font-medium">{index + 1}</span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="relative w-32 h-20">
                         <Image
@@ -346,17 +361,32 @@ export default function HeroImagesPage() {
                     </td>
                     <td className="px-6 py-4">
                       {editingImage?.id === image.id ? (
-                        <input
-                          type="text"
-                          value={editingImage.title}
-                          onChange={(e) =>
-                            setEditingImage({
-                              ...editingImage,
-                              title: e.target.value,
-                            })
-                          }
-                          className="px-2 py-1 border rounded"
-                        />
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={editingImage.title}
+                            onChange={(e) =>
+                              setEditingImage({
+                                ...editingImage,
+                                title: e.target.value,
+                              })
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy"
+                            placeholder="タイトル"
+                          />
+                          <input
+                            type="text"
+                            value={editingImage.altText || ''}
+                            onChange={(e) =>
+                              setEditingImage({
+                                ...editingImage,
+                                altText: e.target.value,
+                              })
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy"
+                            placeholder="代替テキスト"
+                          />
+                        </div>
                       ) : (
                         <div>
                           <div className="font-medium text-gray-900">
@@ -368,54 +398,6 @@ export default function HeroImagesPage() {
                             </div>
                           )}
                         </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {editingImage?.id === image.id ? (
-                        <div className="space-y-1">
-                          <input
-                            type="number"
-                            value={editingImage.width}
-                            onChange={(e) =>
-                              setEditingImage({
-                                ...editingImage,
-                                width: parseInt(e.target.value),
-                              })
-                            }
-                            className="w-20 px-2 py-1 border rounded"
-                          />
-                          <span> × </span>
-                          <input
-                            type="number"
-                            value={editingImage.height}
-                            onChange={(e) =>
-                              setEditingImage({
-                                ...editingImage,
-                                height: parseInt(e.target.value),
-                              })
-                            }
-                            className="w-20 px-2 py-1 border rounded"
-                          />
-                        </div>
-                      ) : (
-                        `${image.width} × ${image.height} px`
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {editingImage?.id === image.id ? (
-                        <input
-                          type="number"
-                          value={editingImage.displayOrder}
-                          onChange={(e) =>
-                            setEditingImage({
-                              ...editingImage,
-                              displayOrder: parseInt(e.target.value),
-                            })
-                          }
-                          className="w-16 px-2 py-1 border rounded"
-                        />
-                      ) : (
-                        image.displayOrder
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -437,9 +419,7 @@ export default function HeroImagesPage() {
                             onClick={() =>
                               handleUpdate(image.id, {
                                 title: editingImage.title,
-                                width: editingImage.width,
-                                height: editingImage.height,
-                                displayOrder: editingImage.displayOrder,
+                                altText: editingImage.altText,
                               })
                             }
                             className="text-green-600 hover:text-green-900"
@@ -476,6 +456,10 @@ export default function HeroImagesPage() {
             </table>
           </div>
         )}
+      </div>
+
+      <div className="mt-4 text-sm text-gray-500">
+        <p>💡 ヒント: 行をドラッグ＆ドロップして表示順序を変更できます</p>
       </div>
     </div>
   )

@@ -42,15 +42,13 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { title, altText, width, height, displayOrder, isActive } = body
+    const { title, altText, displayOrder, isActive } = body
 
     const heroImage = await prisma.heroImage.update({
       where: { id: params.id },
       data: {
         ...(title && { title }),
         ...(altText !== undefined && { altText }),
-        ...(width && { width: parseInt(width) }),
-        ...(height && { height: parseInt(height) }),
         ...(displayOrder !== undefined && { displayOrder: parseInt(displayOrder) }),
         ...(isActive !== undefined && { isActive }),
       },

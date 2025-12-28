@@ -30,8 +30,6 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File
     const title = formData.get('title') as string
     const altText = formData.get('altText') as string
-    const width = parseInt(formData.get('width') as string) || 1920
-    const height = parseInt(formData.get('height') as string) || 1080
     const displayOrder = parseInt(formData.get('displayOrder') as string) || 0
 
     if (!file) {
@@ -66,25 +64,29 @@ export async function POST(request: NextRequest) {
     
     // Ensure directory exists
     await fs.mkdir(publicPath, { recursive: true })
-    await fs.writeFile(path.join(publicPath, filename), buffer)
 
-    // Resize image using sharp if needed
+    // Resize image to fixed size: 1920x1080 (Full HD, 16:9)
     const sharp = require('sharp')
-    const resizedPath = path.join(publicPath, filename)
+    const resizedFilename = `resized_${filename}`
+    const resizedPath = path.join(publicPath, resizedFilename)
+    
     await sharp(buffer)
-      .resize(width, height, { fit: 'cover' })
-      .toFile(resizedPath.replace(filename, `resized_${filename}`))
+      .resize(1920, 1080, { 
+        fit: 'cover',
+        position: 'center'
+      })
+      .toFile(resizedPath)
 
-    const finalPath = `/uploads/hero-images/resized_${filename}`
+    const finalPath = `/uploads/hero-images/${resizedFilename}`
 
-    // Save to database
+    // Save to database with fixed dimensions
     const heroImage = await prisma.heroImage.create({
       data: {
         title,
         imagePath: finalPath,
         altText: altText || title,
-        width,
-        height,
+        width: 1920,
+        height: 1080,
         displayOrder,
         isActive: true,
       },
