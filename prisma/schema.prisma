@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -40,16 +40,22 @@ model Inquiry {
 }
 
 model Customer {
-  id         String   @id @default(cuid())
-  fullName   String
-  email      String?
-  phone      String?
-  country    String?
-  isOverseas Boolean  @default(false)
-  notes      String?
-  createdAt  DateTime @default(now())
+  id             String   @id @default(cuid())
+  customerNumber String   @unique // Auto-generated customer number
+  fullName       String
+  email          String?
+  phone          String?
+  address        String?
+  country        String?
+  isOverseas     Boolean  @default(false)
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  projects   Project[]
+  projects       Project[]
+
+  @@index([customerNumber])
+  @@index([email])
 }
 
 model Project {
@@ -89,7 +95,7 @@ model HeroImage {
 model Service {
   id          String   @id @default(cuid())
   title       String
-  description String   @db.Text
+  description String
   category    String   // e.g., "construction", "design", "consultation"
   icon        String?  // Emoji or icon identifier
   imagePath   String?  // Optional service image
