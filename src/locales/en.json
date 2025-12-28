@@ -1,6 +1,7 @@
 {
   "common": {
     "home": "Home",
+    "about": "About Us",
     "services": "Services",
     "projects": "Projects",
     "process": "Process",
@@ -238,6 +239,90 @@
     "otherWays": {
       "title": "Other Ways to Reach Us",
       "available": "Available 24/7"
+    }
+  },
+  "about": {
+    "hero": {
+      "title": "About Eagle Home & Construction",
+      "subtitle": "Building dreams, creating lasting legacies. We are your trusted partner in bringing architectural visions to life with excellence and integrity."
+    },
+    "stats": {
+      "yearsExperience": "Years of Experience",
+      "projectsCompleted": "Projects Completed",
+      "clientSatisfaction": "Client Satisfaction",
+      "overseasClients": "Overseas Clients"
+    },
+    "story": {
+      "title": "Our Story",
+      "paragraph1": "Founded with a passion for excellence in construction, Eagle Home & Construction has grown from a small local contractor to a trusted name in the industry. Our journey began with a simple vision: to create beautiful, functional spaces that exceed our clients' expectations.",
+      "paragraph2": "Over the years, we have successfully completed hundreds of projects, from intimate residential homes to large-scale commercial developments. Our commitment to quality craftsmanship, transparent communication, and client satisfaction has earned us the trust of clients both locally and internationally.",
+      "paragraph3": "Today, we stand proud as a company that not only builds structures but also builds relationships. Our team of experienced professionals brings together expertise in architecture, engineering, and construction management to deliver projects that stand the test of time."
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description": "To deliver exceptional construction services that transform our clients' visions into reality, while maintaining the highest standards of quality, safety, and sustainability. We are committed to building not just structures, but lasting relationships based on trust and excellence."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "description": "To be the leading construction company recognized for innovation, quality, and customer satisfaction. We envision a future where every project we undertake becomes a benchmark of excellence and a testament to our commitment to building better communities."
+    },
+    "values": {
+      "title": "Our Core Values",
+      "quality": {
+        "title": "Quality Excellence",
+        "description": "We never compromise on quality. Every project is executed with meticulous attention to detail and adherence to the highest industry standards."
+      },
+      "trust": {
+        "title": "Trust & Transparency",
+        "description": "We build lasting relationships through honest communication, transparent pricing, and reliable project delivery."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "description": "We embrace modern construction techniques and technologies to deliver cutting-edge solutions that meet evolving needs."
+      },
+      "global": {
+        "title": "Global Reach",
+        "description": "We proudly serve clients worldwide, providing seamless remote support and ensuring your project succeeds regardless of distance."
+      }
+    },
+    "team": {
+      "title": "Meet Our Team",
+      "subtitle": "Experienced professionals dedicated to bringing your vision to life",
+      "ceo": {
+        "name": "Eagle Leadership",
+        "role": "CEO & Founder",
+        "description": "With over 15 years of construction experience, our leadership brings vision and expertise to every project."
+      },
+      "projectManager": {
+        "name": "Project Management",
+        "role": "Senior Project Manager",
+        "description": "Our project management team ensures timely delivery and seamless coordination of all construction activities."
+      },
+      "architect": {
+        "name": "Design Team",
+        "role": "Chief Architect",
+        "description": "Our architects blend creativity with functionality to create spaces that inspire and endure."
+      }
+    },
+    "whyChooseUs": {
+      "title": "Why Choose Eagle Home & Construction",
+      "experience": {
+        "title": "Proven Experience",
+        "description": "15+ years of successful project delivery across residential, commercial, and industrial sectors."
+      },
+      "international": {
+        "title": "International Expertise",
+        "description": "Serving clients globally with comprehensive remote support and regular project updates."
+      },
+      "commitment": {
+        "title": "Quality Commitment",
+        "description": "Every project backed by our commitment to excellence, safety, and customer satisfaction."
+      }
+    },
+    "cta": {
+      "title": "Ready to Start Your Project?",
+      "subtitle": "Let's discuss how we can bring your vision to life. Contact us today for a free consultation.",
+      "button": "Get in Touch"
     }
   },
   "admin": {
