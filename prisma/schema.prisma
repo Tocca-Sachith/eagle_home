@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -61,7 +61,7 @@ model Customer {
 model Project {
   id              String   @id @default(cuid())
   title           String
-  description     String?  @db.Text
+  description     String?
   location        String?
   projectType     String
   status          String   @default("PLANNING") // PLANNING, IN_PROGRESS, COMPLETED, ON_HOLD
@@ -91,7 +91,7 @@ model Project {
   // Progress tracking
   progressPercent Int      @default(0)
   currentPhase    String?  // e.g., "Foundation", "Framing", "Finishing"
-  notes           String?  @db.Text
+  notes           String?
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -138,7 +138,7 @@ model HeroImage {
 model Service {
   id          String   @id @default(cuid())
   title       String
-  description String   @db.Text
+  description String
   category    String   // e.g., "construction", "design", "consultation"
   icon        String?  // Emoji or icon identifier
   imagePath   String?  // Optional service image
