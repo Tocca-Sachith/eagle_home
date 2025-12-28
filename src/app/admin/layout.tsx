@@ -18,6 +18,7 @@ export default function AdminLayout({
     { href: '/admin/hero-images', label: 'Hero Images', icon: '🖼️' },
     { href: '/admin/services', label: 'Services', icon: '🔧' },
     { href: '/admin/customers', label: 'Customers', icon: '👥' },
+    { href: '/admin/investors', label: 'Investors', icon: '💼' },
     { href: '/admin/projects', label: 'Projects', icon: '🏗️' },
     { href: '/admin/finance', label: 'Finance', icon: '💰' },
     { href: '/admin/reports', label: 'Reports', icon: '📈' },

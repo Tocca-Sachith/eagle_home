@@ -361,6 +361,53 @@
         "yes": "ඔව්",
         "no": "නැත"
       }
+    },
+    "investors": {
+      "title": "ආයෝජකයන්",
+      "addNew": "නව ආයෝජකයෙකු එක් කරන්න",
+      "editInvestor": "ආයෝජකයා සංස්කරණය කරන්න",
+      "deleteInvestor": "ආයෝජකයා මකන්න",
+      "noInvestors": "තවම ආයෝජකයන් නැත",
+      "noInvestorsDesc": "ඔබ ආයෝජකයන් නිර්මාණය කළ පසු ඔවුන් මෙහි දිස්වේ.",
+      "loading": "ආයෝජකයන් පූරණය වෙමින්...",
+      "basicInfo": "මූලික තොරතුරු",
+      "profileImage": "පැතිකඩ රූපය",
+      "confirmDelete": "ඔබට මෙම ආයෝජකයා මකා දැමීමට අවශ්‍ය බව විශ්වාසද?",
+      "deleteSuccess": "ආයෝජකයා සාර්ථකව මකා දමන ලදී",
+      "createSuccess": "ආයෝජකයා සාර්ථකව නිර්මාණය කරන ලදී",
+      "updateSuccess": "ආයෝජකයා සාර්ථකව යාවත්කාලීන කරන ලදී",
+      "form": {
+        "fullName": "සම්පූර්ණ නම",
+        "fullNamePlaceholder": "ආයෝජකයාගේ නම ඇතුළත් කරන්න",
+        "email": "විද්‍යුත් තැපැල් ලිපිනය",
+        "emailPlaceholder": "investor@example.com",
+        "phone": "දුරකථන අංකය",
+        "phonePlaceholder": "+94 77 123 4567",
+        "country": "රට",
+        "countryPlaceholder": "රට ඇතුළත් කරන්න",
+        "address": "ලිපිනය",
+        "addressPlaceholder": "ලිපිනය ඇතුළත් කරන්න",
+        "notes": "සටහන්",
+        "notesPlaceholder": "මෙම ආයෝජකයා පිළිබඳ අමතර සටහන්...",
+        "isActive": "ක්‍රියාත්මක ආයෝජකයා",
+        "cancel": "අවලංගු කරන්න",
+        "save": "සුරකින්න",
+        "creating": "නිර්මාණය කරමින්...",
+        "updating": "යාවත්කාලීන කරමින්..."
+      },
+      "table": {
+        "investor": "ආයෝජකයා",
+        "email": "ඊමේල්",
+        "phone": "දුරකථනය",
+        "country": "රට",
+        "address": "ලිපිනය",
+        "status": "තත්වය",
+        "active": "ක්‍රියාත්මකයි",
+        "inactive": "අක්‍රියයයි",
+        "actions": "ක්‍රියාමාර්ග",
+        "edit": "සංස්කරණය",
+        "delete": "මකන්න"
+      }
     }
   }
 }

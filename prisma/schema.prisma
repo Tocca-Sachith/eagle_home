@@ -152,3 +152,22 @@ model Service {
   @@index([displayOrder])
 }
 
+model Investor {
+  id             String   @id @default(cuid())
+  investorNumber String   @unique // Auto-generated investor number
+  fullName       String
+  email          String?
+  phone          String?
+  country        String?
+  address        String?
+  profileImage   String?  // Path to profile image
+  notes          String?  @db.Text
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([investorNumber])
+  @@index([email])
+  @@index([isActive])
+}
+
