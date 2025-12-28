@@ -245,7 +245,7 @@ export default function HomePage() {
               href="/services"
               className="inline-block bg-brand-navy text-white px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-colors"
             >
-              {t('home.services.viewAll')}
+              View All
             </Link>
           </div>
         </div>
