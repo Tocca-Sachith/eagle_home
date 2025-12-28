@@ -742,107 +742,131 @@ export default function AdminProjectsPage() {
           {/* Desktop Table View */}
           <div className="hidden lg:block bg-white rounded-lg shadow-md overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="w-full table-fixed divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-[25%] px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('admin.projects.table.title')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-[10%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('admin.projects.table.type')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-[10%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('admin.projects.table.status')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-[12%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('admin.projects.table.customer')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-[12%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('admin.projects.table.progress')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-[10%] px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('admin.projects.table.budget')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-[8%] px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('admin.projects.table.published')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="w-[13%] px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       {t('admin.projects.table.actions')}
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {projects.map((project) => (
-                    <tr key={project.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
+                    <tr key={project.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
                           {project.thumbnailImage && (
                             <img
                               src={project.thumbnailImage}
                               alt={project.title}
-                              className="w-12 h-12 rounded object-cover mr-3 flex-shrink-0"
+                              className="w-10 h-10 rounded object-cover flex-shrink-0"
                             />
                           )}
-                          <div className="min-w-0">
-                            <div className="text-sm font-medium text-brand-navy truncate">
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium text-brand-navy truncate" title={project.title}>
                               {project.title}
                             </div>
                             {project.location && (
-                              <div className="text-xs text-gray-500 truncate">
+                              <div className="text-xs text-gray-500 truncate" title={project.location}>
                                 📍 {project.location}
                               </div>
                             )}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-gray">
-                        {getTypeLabel(project.projectType)}
+                      <td className="px-3 py-3">
+                        <div className="text-sm text-brand-gray truncate">
+                          {getTypeLabel(project.projectType)}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 py-3">
                         <span
-                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full whitespace-nowrap ${getStatusColor(
                             project.status
                           )}`}
                         >
                           {getStatusLabel(project.status)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-gray">
-                        {project.customer?.fullName || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-brand-gray mb-1">
-                          {project.progressPercent}%
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-brand-gold h-2 rounded-full transition-all"
-                            style={{ width: `${project.progressPercent}%` }}
-                          />
+                      <td className="px-3 py-3">
+                        <div className="text-sm text-brand-gray truncate" title={project.customer?.fullName || '-'}>
+                          {project.customer?.fullName || '-'}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-gray">
-                        {formatCurrency(project.budgetTotal)}
+                      <td className="px-3 py-3">
+                        <div className="space-y-1">
+                          <div className="text-xs text-brand-gray font-medium">
+                            {project.progressPercent}%
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                            <div
+                              className="bg-brand-gold h-1.5 rounded-full transition-all duration-300"
+                              style={{ width: `${project.progressPercent}%` }}
+                            />
+                          </div>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <td className="px-3 py-3">
+                        <div className="text-sm text-brand-gray truncate">
+                          {formatCurrency(project.budgetTotal)}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 text-center">
                         {project.isPublished ? (
-                          <span className="text-green-600 font-medium">✓ {t('admin.projects.table.yes')}</span>
+                          <span className="inline-flex items-center text-xs text-green-600 font-medium">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                          </span>
                         ) : (
-                          <span className="text-gray-400">✗ {t('admin.projects.table.no')}</span>
+                          <span className="inline-flex items-center text-xs text-gray-400">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                          </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex gap-2">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleEdit(project)}
-                            className="text-brand-navy hover:text-brand-gold transition-colors"
+                            className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-brand-navy bg-blue-50 hover:bg-blue-100 rounded transition-colors"
+                            title={t('admin.projects.table.edit')}
                           >
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
                             {t('admin.projects.table.edit')}
                           </button>
                           <button
                             onClick={() => handleDelete(project.id)}
-                            className="text-red-600 hover:text-red-900 transition-colors"
+                            className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded transition-colors"
+                            title={t('admin.projects.table.delete')}
                           >
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
                             {t('admin.projects.table.delete')}
                           </button>
                         </div>
