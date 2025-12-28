@@ -44,3 +44,7 @@ next-env.d.ts
 prisma/dev.db
 *.db
 *.db-journal
+
+# uploaded images
+/public/uploads/hero-images/*
+!/public/uploads/hero-images/.gitkeep

@@ -15,6 +15,7 @@ export default function AdminLayout({
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: '📊' },
     { href: '/admin/inquiries', label: 'Inquiries', icon: '📬' },
+    { href: '/admin/hero-images', label: 'Hero Images', icon: '🖼️' },
     { href: '/admin/customers', label: 'Customers', icon: '👥' },
     { href: '/admin/projects', label: 'Projects', icon: '🏗️' },
     { href: '/admin/finance', label: 'Finance', icon: '💰' },

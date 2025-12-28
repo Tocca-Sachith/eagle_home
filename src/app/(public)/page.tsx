@@ -1,10 +1,55 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useState, useEffect } from 'react';
+
+interface HeroImage {
+  id: string
+  title: string
+  imagePath: string
+  altText: string | null
+  width: number
+  height: number
+  displayOrder: number
+}
 
 export default function HomePage() {
   const { t } = useLanguage();
+  const [heroImages, setHeroImages] = useState<HeroImage[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchHeroImages();
+  }, []);
+
+  useEffect(() => {
+    if (heroImages.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prevIndex) => 
+          (prevIndex + 1) % heroImages.length
+        );
+      }, 5000); // Change image every 5 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [heroImages]);
+
+  const fetchHeroImages = async () => {
+    try {
+      const res = await fetch('/api/hero-images');
+      const data = await res.json();
+      if (data.heroImages && data.heroImages.length > 0) {
+        setHeroImages(data.heroImages);
+      }
+    } catch (error) {
+      console.error('Error fetching hero images:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const services = [
     {
@@ -42,8 +87,32 @@ export default function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-brand-navy to-brand-gray text-white py-24">
-        <div className="container mx-auto px-4">
+      <section className="relative bg-gradient-to-r from-brand-navy to-brand-gray text-white overflow-hidden">
+        {/* Hero Image Background */}
+        {!loading && heroImages.length > 0 && (
+          <div className="absolute inset-0 z-0">
+            {heroImages.map((image, index) => (
+              <div
+                key={image.id}
+                className={`absolute inset-0 transition-opacity duration-1000 ${
+                  index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <Image
+                  src={image.imagePath}
+                  alt={image.altText || image.title}
+                  fill
+                  className="object-cover"
+                  priority={index === 0}
+                />
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-brand-navy/80 to-brand-gray/80" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="relative z-10 container mx-auto px-4 py-24">
           <div className="max-w-3xl">
             <h1 className="text-5xl md:text-6xl font-bold mb-6">
               {t('home.hero.title')}
@@ -67,6 +136,24 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        {/* Image Indicators */}
+        {heroImages.length > 1 && (
+          <div className="absolute bottom-8 left-0 right-0 z-10 flex justify-center gap-2">
+            {heroImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`w-3 h-3 rounded-full transition-all ${
+                  index === currentImageIndex
+                    ? 'bg-brand-gold w-8'
+                    : 'bg-white/50 hover:bg-white/75'
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Services Overview */}
