@@ -59,7 +59,7 @@ export default function HeroImagesPage() {
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!file || !title) {
-      alert('ファイルとタイトルは必須です')
+      alert('File and title are required')
       return
     }
 
@@ -89,10 +89,10 @@ export default function HeroImagesPage() {
 
       // Refresh list
       fetchHeroImages()
-      alert('画像をアップロードしました！')
+      alert('Image uploaded successfully!')
     } catch (error) {
       console.error('Error uploading:', error)
-      alert('アップロードに失敗しました')
+      alert('Upload failed')
     } finally {
       setUploading(false)
     }
@@ -112,15 +112,15 @@ export default function HeroImagesPage() {
 
       fetchHeroImages()
       setEditingImage(null)
-      alert('更新しました！')
+      alert('Updated successfully!')
     } catch (error) {
       console.error('Error updating:', error)
-      alert('更新に失敗しました')
+      alert('Update failed')
     }
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('この画像を削除してもよろしいですか？')) {
+    if (!confirm('Are you sure you want to delete this image?')) {
       return
     }
 
@@ -134,10 +134,10 @@ export default function HeroImagesPage() {
       }
 
       fetchHeroImages()
-      alert('削除しました')
+      alert('Deleted successfully')
     } catch (error) {
       console.error('Error deleting:', error)
-      alert('削除に失敗しました')
+      alert('Delete failed')
     }
   }
 
@@ -186,7 +186,7 @@ export default function HeroImagesPage() {
       fetchHeroImages()
     } catch (error) {
       console.error('Error reordering:', error)
-      alert('順序の変更に失敗しました')
+      alert('Failed to reorder images')
     }
 
     setDraggedIndex(null)
@@ -195,7 +195,7 @@ export default function HeroImagesPage() {
   if (loading) {
     return (
       <div className="p-8">
-        <p>読み込み中...</p>
+        <p>Loading...</p>
       </div>
     )
   }
@@ -205,28 +205,28 @@ export default function HeroImagesPage() {
       <div className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-brand-navy">
-            ヒーロー画像管理
+            Hero Images Management
           </h1>
           <p className="text-gray-600 mt-2">
-            ホームページのヒーローセクションに表示する画像を管理します
+            Manage images displayed in the homepage hero section
           </p>
         </div>
         <button
           onClick={() => setShowUploadForm(!showUploadForm)}
           className="px-6 py-3 bg-brand-navy text-white rounded-lg hover:bg-opacity-90 transition-colors"
         >
-          {showUploadForm ? 'キャンセル' : '+ 新規画像追加'}
+          {showUploadForm ? 'Cancel' : '+ Add New Image'}
         </button>
       </div>
 
       {/* Upload Form */}
       {showUploadForm && (
         <div className="mb-8 bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">新規画像アップロード</h2>
+          <h2 className="text-xl font-semibold mb-4">Upload New Image</h2>
           <form onSubmit={handleUpload} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                画像ファイル *
+                Image File *
               </label>
               <input
                 type="file"
@@ -249,7 +249,7 @@ export default function HeroImagesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  タイトル *
+                  Title *
                 </label>
                 <input
                   type="text"
@@ -262,13 +262,13 @@ export default function HeroImagesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  代替テキスト (ALT)
+                  Alt Text
                 </label>
                 <input
                   type="text"
                   value={altText}
                   onChange={(e) => setAltText(e.target.value)}
-                  placeholder="タイトルが使用されます"
+                  placeholder="Title will be used if empty"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
                 />
               </div>
@@ -286,14 +286,14 @@ export default function HeroImagesPage() {
                 }}
                 className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
               >
-                キャンセル
+                Cancel
               </button>
               <button
                 type="submit"
                 disabled={uploading}
                 className="px-6 py-2 bg-brand-navy text-white rounded-lg hover:bg-opacity-90 disabled:opacity-50"
               >
-                {uploading ? 'アップロード中...' : 'アップロード'}
+                {uploading ? 'Uploading...' : 'Upload'}
               </button>
             </div>
           </form>
@@ -304,8 +304,8 @@ export default function HeroImagesPage() {
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {heroImages.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
-            <p>ヒーロー画像がまだありません</p>
-            <p className="text-sm mt-2">「新規画像追加」ボタンから追加してください</p>
+            <p>No hero images yet</p>
+            <p className="text-sm mt-2">Click &quot;Add New Image&quot; button to add one</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -313,19 +313,19 @@ export default function HeroImagesPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    順序
+                    Order
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    プレビュー
+                    Preview
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    タイトル / ALT
+                    Title / Alt
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ステータス
+                    Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    操作
+                    Actions
                   </th>
                 </tr>
               </thead>
@@ -372,7 +372,7 @@ export default function HeroImagesPage() {
                               })
                             }
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy"
-                            placeholder="タイトル"
+                            placeholder="Title"
                           />
                           <input
                             type="text"
@@ -384,7 +384,7 @@ export default function HeroImagesPage() {
                               })
                             }
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy"
-                            placeholder="代替テキスト"
+                            placeholder="Alt text"
                           />
                         </div>
                       ) : (
@@ -409,7 +409,7 @@ export default function HeroImagesPage() {
                             : 'bg-gray-100 text-gray-800'
                         }`}
                       >
-                        {image.isActive ? '有効' : '無効'}
+                        {image.isActive ? 'Active' : 'Inactive'}
                       </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
@@ -424,13 +424,13 @@ export default function HeroImagesPage() {
                             }
                             className="text-green-600 hover:text-green-900"
                           >
-                            保存
+                            Save
                           </button>
                           <button
                             onClick={() => setEditingImage(null)}
                             className="text-gray-600 hover:text-gray-900"
                           >
-                            キャンセル
+                            Cancel
                           </button>
                         </>
                       ) : (
@@ -439,13 +439,13 @@ export default function HeroImagesPage() {
                             onClick={() => setEditingImage(image)}
                             className="text-brand-navy hover:text-blue-900"
                           >
-                            編集
+                            Edit
                           </button>
                           <button
                             onClick={() => handleDelete(image.id)}
                             className="text-red-600 hover:text-red-900"
                           >
-                            削除
+                            Delete
                           </button>
                         </>
                       )}
@@ -459,7 +459,7 @@ export default function HeroImagesPage() {
       </div>
 
       <div className="mt-4 text-sm text-gray-500">
-        <p>💡 ヒント: 行をドラッグ＆ドロップして表示順序を変更できます</p>
+        <p>💡 Tip: Drag and drop rows to reorder images</p>
       </div>
     </div>
   )
