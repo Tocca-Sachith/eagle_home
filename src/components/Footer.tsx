@@ -171,9 +171,23 @@ export default function Footer() {
       <div className="border-t border-gray-700">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-400 text-sm text-center md:text-left">
-              &copy; {currentYear} {t('footer.copyright')}
-            </p>
+            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 text-sm">
+              <p className="text-gray-400 text-center md:text-left">
+                &copy; {currentYear} {t('footer.copyright')}
+              </p>
+              <span className="hidden md:inline text-gray-600">|</span>
+              <p className="text-gray-400 text-center md:text-left">
+                Design by :{' '}
+                <a 
+                  href="https://sakurawebsolutions.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-brand-gold hover:text-yellow-400 transition-colors font-medium"
+                >
+                  Sakura Web Solutions
+                </a>
+              </p>
+            </div>
             <div className="flex flex-wrap justify-center gap-6 text-sm">
               <Link 
                 href="/privacy-policy" 
