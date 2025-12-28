@@ -74,38 +74,50 @@ export default function HomePage() {
     }
   };
 
-  const services = [
-    {
-      titleKey: 'home.services.buildOnLand.title',
-      descKey: 'home.services.buildOnLand.description',
-      icon: '🏗️',
-    },
-    {
-      titleKey: 'home.services.landPurchase.title',
-      descKey: 'home.services.landPurchase.description',
-      icon: '🏞️',
-    },
-    {
-      titleKey: 'home.services.renovation.title',
-      descKey: 'home.services.renovation.description',
-      icon: '🔨',
-    },
-    {
-      titleKey: 'home.services.design.title',
-      descKey: 'home.services.design.description',
-      icon: '📐',
-    },
-    {
-      titleKey: 'home.services.turnkey.title',
-      descKey: 'home.services.turnkey.description',
-      icon: '🔑',
-    },
-    {
-      titleKey: 'home.services.financing.title',
-      descKey: 'home.services.financing.description',
-      icon: '💰',
-    },
-  ];
+  // Fetch services from database
+  const [services, setServices] = useState<any[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(true);
+
+  useEffect(() => {
+    fetchServices();
+
+    // Auto-refresh services every 30 seconds
+    const refreshInterval = setInterval(() => {
+      fetchServices();
+    }, 30000);
+
+    // Refresh when page becomes visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchServices();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(refreshInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  const fetchServices = async () => {
+    try {
+      const res = await fetch('/api/services', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
+      const data = await res.json();
+      if (data.services && data.services.length > 0) {
+        setServices(data.services.slice(0, 6)); // Show max 6 services on homepage
+      }
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    } finally {
+      setServicesLoading(false);
+    }
+  };
 
   return (
     <div>
@@ -189,19 +201,52 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service, index) => (
-              <div
-                key={index}
-                className="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow"
-              >
-                <div className="text-4xl mb-4">{service.icon}</div>
-                <h3 className="text-2xl font-semibold text-brand-navy mb-3">
-                  {t(service.titleKey)}
-                </h3>
-                <p className="text-brand-gray">{t(service.descKey)}</p>
-              </div>
-            ))}
+          {servicesLoading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Loading services...</p>
+            </div>
+          ) : services.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">No services available at the moment.</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {services.map((service) => (
+                <div
+                  key={service.id}
+                  className="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow"
+                >
+                  {service.imagePath ? (
+                    <div className="relative w-full h-40 mb-4 rounded-lg overflow-hidden">
+                      <Image
+                        src={service.imagePath}
+                        alt={service.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-4xl mb-4">{service.icon || '📋'}</div>
+                  )}
+                  <h3 className="text-2xl font-semibold text-brand-navy mb-3">
+                    {service.title}
+                  </h3>
+                  <p className="text-brand-gray line-clamp-3">{service.description}</p>
+                  <span className="inline-block mt-3 px-3 py-1 bg-brand-gold/20 text-brand-navy text-xs font-medium rounded-full">
+                    {service.category.charAt(0).toUpperCase() + service.category.slice(1)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="text-center mt-12">
+            <Link
+              href="/services"
+              className="inline-block bg-brand-navy text-white px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-colors"
+            >
+              {t('home.services.viewAll')}
+            </Link>
           </div>
         </div>
       </section>

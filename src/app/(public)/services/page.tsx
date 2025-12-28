@@ -20,11 +20,34 @@ export default function ServicesPage() {
 
   useEffect(() => {
     fetchServices()
+
+    // Auto-refresh services every 30 seconds
+    const refreshInterval = setInterval(() => {
+      fetchServices();
+    }, 30000);
+
+    // Refresh when page becomes visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchServices();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(refreshInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [])
 
   const fetchServices = async () => {
     try {
-      const res = await fetch('/api/services')
+      const res = await fetch('/api/services', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      })
       const data = await res.json()
       setServices(data.services || [])
     } catch (error) {

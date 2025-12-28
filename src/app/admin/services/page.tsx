@@ -28,11 +28,12 @@ export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
-  const [showForm, setShowForm] = useState(false)
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
 
-  // Form state
+  // Create form state
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('construction')
@@ -40,13 +41,24 @@ export default function ServicesPage() {
   const [file, setFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string>('')
 
+  // Edit form state
+  const [editTitle, setEditTitle] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [editCategory, setEditCategory] = useState('construction')
+  const [editIcon, setEditIcon] = useState('')
+  const [editFile, setEditFile] = useState<File | null>(null)
+  const [editPreviewUrl, setEditPreviewUrl] = useState<string>('')
+
   useEffect(() => {
     fetchServices()
   }, [])
 
   const fetchServices = async () => {
     try {
-      const res = await fetch('/api/services?includeInactive=true')
+      const res = await fetch('/api/services?includeInactive=true', {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      })
       const data = await res.json()
       setServices(data.services || [])
     } catch (error) {
@@ -62,6 +74,15 @@ export default function ServicesPage() {
       setFile(selectedFile)
       const url = URL.createObjectURL(selectedFile)
       setPreviewUrl(url)
+    }
+  }
+
+  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0]
+    if (selectedFile) {
+      setEditFile(selectedFile)
+      const url = URL.createObjectURL(selectedFile)
+      setEditPreviewUrl(url)
     }
   }
 
@@ -91,7 +112,6 @@ export default function ServicesPage() {
         throw new Error('Create failed')
       }
 
-      // Reset form
       resetForm()
       fetchServices()
       alert('Service created successfully!')
@@ -110,27 +130,89 @@ export default function ServicesPage() {
     setIcon('')
     setFile(null)
     setPreviewUrl('')
-    setShowForm(false)
+    setShowCreateForm(false)
   }
 
-  const handleUpdate = async (id: string, updates: Partial<Service>) => {
-    try {
-      const res = await fetch(`/api/services/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      })
+  const openEditModal = (service: Service) => {
+    setEditingService(service)
+    setEditTitle(service.title)
+    setEditDescription(service.description)
+    setEditCategory(service.category)
+    setEditIcon(service.icon || '')
+    setEditFile(null)
+    setEditPreviewUrl('')
+    setShowEditModal(true)
+  }
 
-      if (!res.ok) {
-        throw new Error('Update failed')
+  const closeEditModal = () => {
+    setShowEditModal(false)
+    setEditingService(null)
+    setEditTitle('')
+    setEditDescription('')
+    setEditCategory('construction')
+    setEditIcon('')
+    setEditFile(null)
+    setEditPreviewUrl('')
+  }
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingService || !editTitle || !editDescription || !editCategory) {
+      alert('Title, description, and category are required')
+      return
+    }
+
+    setUploading(true)
+    try {
+      // If new image file is provided, upload it
+      if (editFile) {
+        const formData = new FormData()
+        formData.append('file', editFile)
+        formData.append('title', editTitle)
+        formData.append('description', editDescription)
+        formData.append('category', editCategory)
+        formData.append('icon', editIcon)
+        formData.append('displayOrder', editingService.displayOrder.toString())
+
+        // Delete old service and create new one
+        await fetch(`/api/services/${editingService.id}`, {
+          method: 'DELETE',
+        })
+
+        const res = await fetch('/api/services', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!res.ok) {
+          throw new Error('Update failed')
+        }
+      } else {
+        // Update only text fields
+        const res = await fetch(`/api/services/${editingService.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: editTitle,
+            description: editDescription,
+            category: editCategory,
+            icon: editIcon,
+          }),
+        })
+
+        if (!res.ok) {
+          throw new Error('Update failed')
+        }
       }
 
+      closeEditModal()
       fetchServices()
-      setEditingService(null)
       alert('Service updated successfully!')
     } catch (error) {
       console.error('Error updating service:', error)
-      alert('Failed to update service')
+      alert('Update failed')
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -157,7 +239,22 @@ export default function ServicesPage() {
   }
 
   const toggleActive = async (id: string, currentActive: boolean) => {
-    await handleUpdate(id, { isActive: !currentActive })
+    try {
+      const res = await fetch(`/api/services/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !currentActive }),
+      })
+
+      if (!res.ok) {
+        throw new Error('Update failed')
+      }
+
+      fetchServices()
+    } catch (error) {
+      console.error('Error toggling active:', error)
+      alert('Failed to update status')
+    }
   }
 
   const handleDragStart = (index: number) => {
@@ -225,15 +322,15 @@ export default function ServicesPage() {
           </p>
         </div>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => setShowCreateForm(!showCreateForm)}
           className="px-6 py-3 bg-brand-navy text-white rounded-lg hover:bg-opacity-90 transition-colors"
         >
-          {showForm ? 'Cancel' : '+ Add New Service'}
+          {showCreateForm ? 'Cancel' : '+ Add New Service'}
         </button>
       </div>
 
       {/* Create Form */}
-      {showForm && (
+      {showCreateForm && (
         <div className="mb-8 bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">Create New Service</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -337,6 +434,145 @@ export default function ServicesPage() {
         </div>
       )}
 
+      {/* Edit Modal */}
+      {showEditModal && editingService && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Edit Service</h2>
+                <button
+                  onClick={closeEditModal}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdate} className="space-y-4">
+                {/* Current Image */}
+                {editingService.imagePath && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Current Image
+                    </label>
+                    <div className="relative w-full h-48">
+                      <Image
+                        src={editingService.imagePath}
+                        alt={editingService.title}
+                        fill
+                        className="object-cover rounded-lg"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* New Image Upload */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Replace Image (Optional)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleEditFileChange}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-navy file:text-white hover:file:bg-opacity-90"
+                  />
+                  {editPreviewUrl && (
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-600 mb-2">New Image Preview:</p>
+                      <img
+                        src={editPreviewUrl}
+                        alt="Preview"
+                        className="max-w-sm rounded-lg shadow"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Title *
+                    </label>
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Category *
+                    </label>
+                    <select
+                      value={editCategory}
+                      onChange={(e) => setEditCategory(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+                      required
+                    >
+                      {CATEGORIES.map((cat) => (
+                        <option key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description *
+                  </label>
+                  <textarea
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Icon (Emoji)
+                  </label>
+                  <input
+                    type="text"
+                    value={editIcon}
+                    onChange={(e) => setEditIcon(e.target.value)}
+                    placeholder="🏗️"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy focus:border-transparent"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={closeEditModal}
+                    className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={uploading}
+                    className="px-6 py-2 bg-brand-navy text-white rounded-lg hover:bg-opacity-90 disabled:opacity-50"
+                  >
+                    {uploading ? 'Updating...' : 'Update Service'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Services List */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {services.length === 0 ? (
@@ -410,67 +646,19 @@ export default function ServicesPage() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      {editingService?.id === service.id ? (
-                        <div className="space-y-2">
-                          <input
-                            type="text"
-                            value={editingService.title}
-                            onChange={(e) =>
-                              setEditingService({
-                                ...editingService,
-                                title: e.target.value,
-                              })
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                            placeholder="Title"
-                          />
-                          <textarea
-                            value={editingService.description}
-                            onChange={(e) =>
-                              setEditingService({
-                                ...editingService,
-                                description: e.target.value,
-                              })
-                            }
-                            rows={2}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                            placeholder="Description"
-                          />
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          {service.title}
                         </div>
-                      ) : (
-                        <div>
-                          <div className="font-medium text-gray-900">
-                            {service.title}
-                          </div>
-                          <div className="text-sm text-gray-500 line-clamp-2">
-                            {service.description}
-                          </div>
+                        <div className="text-sm text-gray-500 line-clamp-2">
+                          {service.description}
                         </div>
-                      )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {editingService?.id === service.id ? (
-                        <select
-                          value={editingService.category}
-                          onChange={(e) =>
-                            setEditingService({
-                              ...editingService,
-                              category: e.target.value,
-                            })
-                          }
-                          className="px-3 py-2 border border-gray-300 rounded-lg"
-                        >
-                          {CATEGORIES.map((cat) => (
-                            <option key={cat.value} value={cat.value}>
-                              {cat.label}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                          {CATEGORIES.find((c) => c.value === service.category)?.label || service.category}
-                        </span>
-                      )}
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                        {CATEGORIES.find((c) => c.value === service.category)?.label || service.category}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
@@ -485,43 +673,18 @@ export default function ServicesPage() {
                       </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      {editingService?.id === service.id ? (
-                        <>
-                          <button
-                            onClick={() =>
-                              handleUpdate(service.id, {
-                                title: editingService.title,
-                                description: editingService.description,
-                                category: editingService.category,
-                              })
-                            }
-                            className="text-green-600 hover:text-green-900"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={() => setEditingService(null)}
-                            className="text-gray-600 hover:text-gray-900"
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => setEditingService(service)}
-                            className="text-brand-navy hover:text-blue-900"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(service.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Delete
-                          </button>
-                        </>
-                      )}
+                      <button
+                        onClick={() => openEditModal(service)}
+                        className="text-brand-navy hover:text-blue-900"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(service.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
