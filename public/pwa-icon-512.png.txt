@@ -1,2 +1,2 @@
 This is a placeholder. In production, use:
-convert logo.png -resize 512x512 -gravity center -extent 512x512 pwa-icon-512.png
+convert logomain.png -resize 512x512 -gravity center -extent 512x512 pwa-icon-512.png
