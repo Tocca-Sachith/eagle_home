@@ -66,7 +66,7 @@ export default function AdminLayout({
             </button>
             <div className="relative w-[100px] h-[30px]">
               <Image 
-                src="/logo.png" 
+                src="/logomain.png" 
                 alt="Eagle Admin" 
                 fill
                 className="object-contain brightness-0 invert"
@@ -126,7 +126,7 @@ export default function AdminLayout({
             <div className="flex items-center gap-8">
               <div className="relative w-[140px] h-[40px]">
                 <Image 
-                  src="/logo.png" 
+                  src="/logomain.png" 
                   alt="Eagle Admin" 
                   fill
                   className="object-contain brightness-0 invert"
