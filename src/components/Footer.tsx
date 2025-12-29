@@ -161,8 +161,8 @@ export default function Footer() {
                 </svg>
                 <div>
                   <div className="text-xs text-gray-400 mb-2">{t('footer.followUs')}</div>
-                  {/* Desktop: Single row, Mobile: 2 rows (3 per row) */}
-                  <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-2">
+                  {/* All screen sizes: 3 icons per row, 2 rows */}
+                  <div className="grid grid-cols-3 gap-2 max-w-[150px]">
                     {/* Facebook */}
                     <a href="#" className="w-9 h-9 bg-gray-700 hover:bg-[#1877F2] rounded-full flex items-center justify-center transition-all hover:scale-110" title="Facebook">
                       <span className="sr-only">Facebook</span>
