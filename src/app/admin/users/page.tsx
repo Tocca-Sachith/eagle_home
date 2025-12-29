@@ -119,7 +119,7 @@ export default function AdminUsersPage() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('本当にこのユーザーを削除しますか？ / Are you sure you want to delete this user?')) {
+    if (!confirm('Are you sure you want to delete this user?')) {
       return;
     }
 
@@ -155,7 +155,7 @@ export default function AdminUsersPage() {
         setShowResetModal(false);
         setNewPassword('');
         setSelectedUser(null);
-        alert('パスワードが再設定されました / Password has been reset');
+        alert('Password has been reset successfully');
       } else {
         const data = await response.json();
         alert(data.error || 'Failed to reset password');
@@ -185,11 +185,11 @@ export default function AdminUsersPage() {
   if (status === 'loading' || loading) {
     return (
       <div>
-        <h1 className="text-3xl font-bold text-brand-navy mb-8">ユーザー管理 / User Management</h1>
+        <h1 className="text-3xl font-bold text-brand-navy mb-8">User Management</h1>
         <div className="bg-white rounded-lg shadow-md p-8">
           <div className="text-center py-12">
             <div className="text-4xl mb-4">⏳</div>
-            <p className="text-brand-gray">読み込み中... / Loading...</p>
+            <p className="text-brand-gray">Loading...</p>
           </div>
         </div>
       </div>
@@ -199,7 +199,7 @@ export default function AdminUsersPage() {
   if (error) {
     return (
       <div>
-        <h1 className="text-3xl font-bold text-brand-navy mb-8">ユーザー管理 / User Management</h1>
+        <h1 className="text-3xl font-bold text-brand-navy mb-8">User Management</h1>
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           <p>{error}</p>
         </div>
@@ -210,7 +210,7 @@ export default function AdminUsersPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-brand-navy">ユーザー管理 / User Management</h1>
+        <h1 className="text-3xl font-bold text-brand-navy">User Management</h1>
         <button
           onClick={() => {
             setFormData({ email: '', name: '', password: '', role: 'USER' });
@@ -218,7 +218,7 @@ export default function AdminUsersPage() {
           }}
           className="bg-brand-gold text-brand-navy px-6 py-3 rounded-lg font-semibold hover:bg-yellow-500 transition-colors"
         >
-          + 新規ユーザー追加 / Add User
+          + Add User
         </button>
       </div>
 
@@ -226,7 +226,7 @@ export default function AdminUsersPage() {
         <div className="bg-white rounded-lg shadow-md p-8">
           <div className="text-center py-12">
             <div className="text-6xl mb-4">👤</div>
-            <p className="text-brand-gray">ユーザーが登録されていません / No users registered</p>
+            <p className="text-brand-gray">No users registered</p>
           </div>
         </div>
       ) : (
@@ -235,12 +235,12 @@ export default function AdminUsersPage() {
             <table className="w-full">
               <thead className="bg-brand-navy text-white">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">名前 / Name</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">メール / Email</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">役割 / Role</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">状態 / Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">最終ログイン / Last Login</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold">操作 / Actions</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold">Name</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold">Email</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold">Role</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold">Last Login</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -267,33 +267,33 @@ export default function AdminUsersPage() {
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {user.isActive ? '有効 / Active' : '無効 / Inactive'}
+                        {user.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-brand-gray whitespace-nowrap">
                       {user.lastLogin 
                         ? new Date(user.lastLogin).toLocaleString()
-                        : '未ログイン / Never'}
+                        : 'Never'}
                     </td>
                     <td className="px-6 py-4 text-sm space-x-2">
                       <button
                         onClick={() => openEditModal(user)}
                         className="text-blue-600 hover:text-blue-800 font-medium"
                       >
-                        編集
+                        Edit
                       </button>
                       <button
                         onClick={() => openResetModal(user)}
                         className="text-yellow-600 hover:text-yellow-800 font-medium"
                       >
-                        PW
+                        Reset PW
                       </button>
                       {(session?.user as any)?.id !== user.id && (
                         <button
                           onClick={() => handleDeleteUser(user.id)}
                           className="text-red-600 hover:text-red-800 font-medium"
                         >
-                          削除
+                          Delete
                         </button>
                       )}
                     </td>
@@ -309,11 +309,11 @@ export default function AdminUsersPage() {
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h2 className="text-2xl font-bold text-brand-navy mb-4">新規ユーザー追加 / Add New User</h2>
+            <h2 className="text-2xl font-bold text-brand-navy mb-4">Add New User</h2>
             <form onSubmit={handleAddUser} className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-brand-navy mb-2">
-                  名前 / Name *
+                  Name *
                 </label>
                 <input
                   type="text"
@@ -325,7 +325,7 @@ export default function AdminUsersPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-brand-navy mb-2">
-                  メールアドレス / Email *
+                  Email *
                 </label>
                 <input
                   type="email"
@@ -337,7 +337,7 @@ export default function AdminUsersPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-brand-navy mb-2">
-                  パスワード / Password *
+                  Password *
                 </label>
                 <input
                   type="password"
@@ -349,7 +349,7 @@ export default function AdminUsersPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-brand-navy mb-2">
-                  役割 / Role *
+                  Role *
                 </label>
                 <select
                   value={formData.role}
@@ -366,13 +366,13 @@ export default function AdminUsersPage() {
                   onClick={() => setShowAddModal(false)}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
-                  キャンセル / Cancel
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="flex-1 bg-brand-gold text-brand-navy px-4 py-2 rounded-lg font-semibold hover:bg-yellow-500"
                 >
-                  追加 / Add
+                  Add
                 </button>
               </div>
             </form>
@@ -384,11 +384,11 @@ export default function AdminUsersPage() {
       {showEditModal && selectedUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h2 className="text-2xl font-bold text-brand-navy mb-4">ユーザー編集 / Edit User</h2>
+            <h2 className="text-2xl font-bold text-brand-navy mb-4">Edit User</h2>
             <form onSubmit={handleUpdateUser} className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-brand-navy mb-2">
-                  名前 / Name *
+                  Name *
                 </label>
                 <input
                   type="text"
@@ -400,7 +400,7 @@ export default function AdminUsersPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-brand-navy mb-2">
-                  メールアドレス / Email *
+                  Email *
                 </label>
                 <input
                   type="email"
@@ -412,7 +412,7 @@ export default function AdminUsersPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-brand-navy mb-2">
-                  役割 / Role *
+                  Role *
                 </label>
                 <select
                   value={formData.role}
@@ -432,13 +432,13 @@ export default function AdminUsersPage() {
                   }}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
-                  キャンセル / Cancel
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="flex-1 bg-brand-gold text-brand-navy px-4 py-2 rounded-lg font-semibold hover:bg-yellow-500"
                 >
-                  更新 / Update
+                  Update
                 </button>
               </div>
             </form>
@@ -451,15 +451,15 @@ export default function AdminUsersPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <h2 className="text-2xl font-bold text-brand-navy mb-4">
-              パスワード再設定 / Reset Password
+              Reset Password
             </h2>
             <p className="text-sm text-brand-gray mb-4">
-              ユーザー / User: {selectedUser.name} ({selectedUser.email})
+              User: {selectedUser.name} ({selectedUser.email})
             </p>
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-brand-navy mb-2">
-                  新しいパスワード / New Password *
+                  New Password *
                 </label>
                 <input
                   type="password"
@@ -467,7 +467,7 @@ export default function AdminUsersPage() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-gold"
-                  placeholder="新しいパスワードを入力"
+                  placeholder="Enter new password"
                 />
               </div>
               <div className="flex gap-4 mt-6">
@@ -480,13 +480,13 @@ export default function AdminUsersPage() {
                   }}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
-                  キャンセル / Cancel
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="flex-1 bg-brand-gold text-brand-navy px-4 py-2 rounded-lg font-semibold hover:bg-yellow-500"
                 >
-                  再設定 / Reset
+                  Reset
                 </button>
               </div>
             </form>

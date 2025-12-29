@@ -3,11 +3,9 @@
 import { signIn } from 'next-auth/react';
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -43,17 +41,17 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-2xl">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-brand-navy">
-            {t('header.companyName')}
+            Eagle Home & Construction
           </h2>
           <p className="mt-2 text-center text-sm text-brand-gray">
-            管理画面ログイン / Admin Login
+            Admin Login
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-brand-navy mb-2">
-                メールアドレス / Email
+                Email
               </label>
               <input
                 id="email"
@@ -69,7 +67,7 @@ export default function LoginPage() {
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-brand-navy mb-2">
-                パスワード / Password
+                Password
               </label>
               <input
                 id="password"
@@ -103,13 +101,13 @@ export default function LoginPage() {
               disabled={loading}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-brand-navy bg-brand-gold hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {loading ? 'ログイン中... / Logging in...' : 'ログイン / Login'}
+              {loading ? 'Logging in...' : 'Login'}
             </button>
           </div>
 
           <div className="text-center">
             <p className="mt-2 text-xs text-gray-600">
-              デフォルトアカウント / Default Account:<br />
+              Default Account:<br />
               <span className="font-mono text-brand-navy">admin@eaglehome.com</span> / 
               <span className="font-mono text-brand-navy"> admin123</span>
             </p>

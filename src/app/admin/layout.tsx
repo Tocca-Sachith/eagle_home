@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
@@ -14,6 +14,19 @@ export default function AdminLayout({
   const pathname = usePathname();
   const { data: session } = useSession();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: '📊', shortLabel: 'Home' },
@@ -60,9 +73,49 @@ export default function AdminLayout({
               />
             </div>
           </div>
-          <Link href="/" className="text-xs text-gray-300 hover:text-white">
-            Public Site
-          </Link>
+          
+          {/* Mobile User Menu */}
+          {session?.user && (
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-2 hover:bg-white/10 rounded-lg p-1 transition-colors"
+              >
+                <div className="w-8 h-8 bg-brand-gold rounded-full flex items-center justify-center text-brand-navy font-bold text-sm">
+                  {(session.user.name || session.user.email || 'U')[0].toUpperCase()}
+                </div>
+              </button>
+              
+              {/* User Dropdown */}
+              {isUserMenuOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl py-2 text-brand-navy">
+                  <div className="px-4 py-3 border-b border-gray-200">
+                    <p className="text-sm font-semibold">{session.user.name || 'Admin'}</p>
+                    <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
+                  </div>
+                  <Link
+                    href="/"
+                    className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span className="text-sm">Public Website</span>
+                  </Link>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/login' })}
+                    className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 text-red-600 transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span className="text-sm font-medium">Logout</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </header>
 
@@ -86,26 +139,55 @@ export default function AdminLayout({
                 Back to Website
               </Link>
             </div>
-            <div className="flex items-center gap-4">
-              {session?.user && (
-                <>
-                  <div className="flex items-center gap-3 bg-white/10 px-4 py-2 rounded-lg">
-                    <div className="w-8 h-8 bg-brand-gold rounded-full flex items-center justify-center text-brand-navy font-bold">
-                      {(session.user.name || session.user.email || 'U')[0].toUpperCase()}
-                    </div>
-                    <span className="text-sm font-medium">
-                      {session.user.name || session.user.email}
-                    </span>
+            
+            {/* Desktop User Menu */}
+            {session?.user && (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-3 bg-white/10 px-4 py-2 rounded-lg hover:bg-white/20 transition-colors"
+                >
+                  <div className="w-8 h-8 bg-brand-gold rounded-full flex items-center justify-center text-brand-navy font-bold">
+                    {(session.user.name || session.user.email || 'U')[0].toUpperCase()}
                   </div>
-                  <button
-                    onClick={() => signOut({ callbackUrl: '/login' })}
-                    className="text-sm bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors font-medium"
-                  >
-                    Logout
-                  </button>
-                </>
-              )}
-            </div>
+                  <span className="text-sm font-medium">
+                    {session.user.name || session.user.email}
+                  </span>
+                  <svg className={`w-4 h-4 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {/* User Dropdown */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl py-2 text-brand-navy">
+                    <div className="px-4 py-3 border-b border-gray-200">
+                      <p className="text-sm font-semibold">{session.user.name || 'Admin'}</p>
+                      <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
+                    </div>
+                    <Link
+                      href="/"
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 transition-colors"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      </svg>
+                      <span className="text-sm">Public Website</span>
+                    </Link>
+                    <button
+                      onClick={() => signOut({ callbackUrl: '/login' })}
+                      className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 text-red-600 transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      <span className="text-sm font-medium">Logout</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -138,12 +220,6 @@ export default function AdminLayout({
                   <div className="text-xs text-gray-500">{session.user.email}</div>
                 </div>
               </div>
-              <button
-                onClick={() => signOut({ callbackUrl: '/login' })}
-                className="w-full text-sm bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
-              >
-                Logout
-              </button>
             </div>
           )}
           <ul className="space-y-1">
