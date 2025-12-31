@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
+import bcrypt from 'bcryptjs'
 
 // Generate investor number in format: INV-YYYYMMDD-XXX
 async function generateInvestorNumber(): Promise<string> {
@@ -84,9 +85,36 @@ export async function POST(request: NextRequest) {
     const notes = formData.get('notes') as string
     const profileImageFile = formData.get('profileImage') as File | null
 
+    // Validation
     if (!fullName) {
       return NextResponse.json(
         { error: 'Full name is required' },
+        { status: 400 }
+      )
+    }
+    
+    if (!email) {
+      return NextResponse.json(
+        { error: 'Email is required for investor account' },
+        { status: 400 }
+      )
+    }
+    
+    if (!phone) {
+      return NextResponse.json(
+        { error: 'Phone number is required for investor account' },
+        { status: 400 }
+      )
+    }
+
+    // Check if email already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    })
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'Email already exists in the system' },
         { status: 400 }
       )
     }
@@ -112,22 +140,42 @@ export async function POST(request: NextRequest) {
       profileImagePath = `/uploads/investors/${filename}`
     }
 
+    // Hash phone number for password (initial password)
+    const hashedPassword = await bcrypt.hash(phone, 10)
+
+    // Create User account first
+    const user = await prisma.user.create({
+      data: {
+        email,
+        name: fullName,
+        password: hashedPassword,
+        role: 'INVESTOR',
+        isActive: true,
+      },
+    })
+
+    // Create Investor and link to User
     const investor = await prisma.investor.create({
       data: {
         investorNumber,
         fullName,
-        email: email || null,
-        phone: phone || null,
+        email,
+        phone,
         country: country || null,
         address: address || null,
         notes: notes || null,
         profileImage: profileImagePath,
+        userId: user.id,
       },
     })
 
     return NextResponse.json({
       success: true,
       investor,
+      user: {
+        email: user.email,
+        initialPassword: phone, // Return this info for admin to inform investor
+      },
     })
   } catch (error) {
     console.error('Error creating investor:', error)

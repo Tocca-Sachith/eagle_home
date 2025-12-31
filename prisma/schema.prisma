@@ -12,12 +12,15 @@ model User {
   email         String    @unique
   name          String
   password      String
-  role          String    @default("USER") // USER, ADMIN
+  role          String    @default("USER") // USER, ADMIN, INVESTOR
   isActive      Boolean   @default(true)
   lastLogin     DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   createdBy     String?
+  
+  // Relationship with Investor
+  investor      Investor?
 
   @@index([email])
   @@index([role])
@@ -97,6 +100,7 @@ model Project {
   updatedAt       DateTime @updatedAt
   
   images          ProjectImage[]
+  investors       ProjectInvestor[]
 
   @@index([status])
   @@index([createdAt])
@@ -165,9 +169,31 @@ model Investor {
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  
+  // User account relationship (one-to-one)
+  userId         String?  @unique
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Projects relationship (many-to-many)
+  projects       ProjectInvestor[]
 
   @@index([investorNumber])
   @@index([email])
   @@index([isActive])
+  @@index([userId])
+}
+
+// Junction table for Project-Investor many-to-many relationship
+model ProjectInvestor {
+  id          String   @id @default(cuid())
+  projectId   String
+  investorId  String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  investor    Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
+  assignedAt  DateTime @default(now())
+  
+  @@unique([projectId, investorId])
+  @@index([projectId])
+  @@index([investorId])
 }
 
