@@ -278,7 +278,7 @@ async function main() {
     prisma.heroImage.create({
       data: {
         title: 'Modern Family Home',
-        imagePath: '/images/hero/modern-home.jpg',
+        imagePath: '/images/hero/modern-home.svg',
         altText: 'Beautiful modern family home with spacious garden',
         width: 1920,
         height: 1080,
@@ -289,7 +289,7 @@ async function main() {
     prisma.heroImage.create({
       data: {
         title: 'Luxury Villa Construction',
-        imagePath: '/images/hero/luxury-villa.jpg',
+        imagePath: '/images/hero/luxury-villa.svg',
         altText: 'Luxury villa under construction with ocean view',
         width: 1920,
         height: 1080,
@@ -300,11 +300,22 @@ async function main() {
     prisma.heroImage.create({
       data: {
         title: 'Contemporary Architecture',
-        imagePath: '/images/hero/contemporary.jpg',
+        imagePath: '/images/hero/contemporary.svg',
         altText: 'Contemporary architectural design with clean lines',
         width: 1920,
         height: 1080,
         displayOrder: 2,
+        isActive: true,
+      },
+    }),
+    prisma.heroImage.create({
+      data: {
+        title: 'Sri Lankan Construction Site',
+        imagePath: '/images/hero/sri-lankan-construction.svg',
+        altText: 'A realistic high-end residential house being built in Sri Lanka, showing the transition from construction to a nearly completed modern home. Skilled Sri Lankan construction workers wearing safety helmets, clean construction site, organized materials. Tropical greenery, palm trees, warm sunlight. Modern architecture with white, gray, and subtle gold accents. The house looks strong, elegant, and well-crafted, representing trust, quality, and professional construction services in Sri Lanka.',
+        width: 1980,
+        height: 1080,
+        displayOrder: 3,
         isActive: true,
       },
     }),
