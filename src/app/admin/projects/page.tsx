@@ -524,8 +524,7 @@ export default function AdminProjectsPage() {
 
   // Images are uploaded immediately when selected (see handleSelectImages)
 
-  const handleSelectImages = async (files: FileList | null) => {
-    const list = Array.from(files || [])
+  const handleSelectImages = async (list: File[]) => {
     if (list.length === 0) return
     // upload immediately without refreshing the page
     try {
@@ -1279,11 +1278,13 @@ export default function AdminProjectsPage() {
                         type="file"
                         accept="image/*"
                         multiple
-                        onChange={async (e) => {
+                        onChange={(e) => {
+                          const input = e.currentTarget
+                          const files = Array.from(input.files || [])
+                          // allow re-selecting the same file(s) (clear before async work)
+                          input.value = ''
                           // Auto-upload immediately (no button) and keep form state intact
-                          await handleSelectImages(e.target.files)
-                          // allow re-selecting the same file(s)
-                          e.currentTarget.value = ''
+                          void handleSelectImages(files)
                         }}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-brand-navy file:text-white hover:file:bg-opacity-90"
                       />
