@@ -5,6 +5,30 @@ import { authOptions } from '@/lib/auth'
 import { writeFile, mkdir, unlink } from 'fs/promises'
 import path from 'path'
 
+type InvestorAssignmentInput = {
+  investorId: string
+  investmentAmount?: number | null
+}
+
+type ProjectExpenseInput = {
+  phase?: string | null
+  category?: string | null
+  item: string
+  amount: number
+  currency?: string | null
+  expenseDate?: string | null
+  notes?: string | null
+}
+
+function safeJsonParse<T>(value: string | null): T | null {
+  if (!value) return null
+  try {
+    return JSON.parse(value) as T
+  } catch {
+    return null
+  }
+}
+
 // GET /api/projects/[id]
 export async function GET(
   request: NextRequest,
@@ -12,14 +36,41 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    const session = await getServerSession(authOptions).catch(() => null)
+    const isAdmin = !!session?.user && session.user.role === 'ADMIN'
 
     const project = await prisma.project.findUnique({
       where: { id },
       include: {
-        customer: true,
+        customer: isAdmin,
         images: {
           orderBy: { displayOrder: 'asc' },
         },
+        investors: isAdmin
+          ? {
+              include: {
+                investor: {
+                  select: {
+                    id: true,
+                    investorNumber: true,
+                    fullName: true,
+                    email: true,
+                    phone: true,
+                    isActive: true,
+                  },
+                },
+              },
+              orderBy: { assignedAt: 'desc' as const },
+            }
+          : false,
+        expenses: isAdmin
+          ? {
+              orderBy: [
+                { expenseDate: 'desc' as const },
+                { createdAt: 'desc' as const },
+              ],
+            }
+          : false,
       },
     })
 
@@ -74,6 +125,8 @@ export async function PUT(
     const displayOrder = formData.get('displayOrder') as string
     const notes = formData.get('notes') as string
     const thumbnailFile = formData.get('thumbnail') as File | null
+    const investorsJson = formData.get('investorsJson') as string | null
+    const expensesJson = formData.get('expensesJson') as string | null
 
     // Get existing project
     const existingProject = await prisma.project.findUnique({
@@ -115,50 +168,105 @@ export async function PUT(
       thumbnailPath = `/uploads/projects/${filename}`
     }
 
-    const project = await prisma.project.update({
-      where: { id },
-      data: {
-        ...(title && { title }),
-        ...(description !== undefined && { description: description || null }),
-        ...(location !== undefined && { location: location || null }),
-        ...(projectType && { projectType }),
-        ...(status && { status }),
-        ...(customerId !== undefined && { customerId: customerId || null }),
-        ...(budgetTotal !== undefined && { 
-          budgetTotal: budgetTotal ? parseFloat(budgetTotal) : null 
-        }),
-        ...(actualCost !== undefined && { 
-          actualCost: actualCost ? parseFloat(actualCost) : null 
-        }),
-        ...(contractDate !== undefined && { 
-          contractDate: contractDate ? new Date(contractDate) : null 
-        }),
-        ...(startDate !== undefined && { 
-          startDate: startDate ? new Date(startDate) : null 
-        }),
-        ...(endDatePlanned !== undefined && { 
-          endDatePlanned: endDatePlanned ? new Date(endDatePlanned) : null 
-        }),
-        ...(actualEndDate !== undefined && { 
-          actualEndDate: actualEndDate ? new Date(actualEndDate) : null 
-        }),
-        ...(investorName !== undefined && { investorName: investorName || null }),
-        ...(investorContact !== undefined && { investorContact: investorContact || null }),
-        ...(currentPhase !== undefined && { currentPhase: currentPhase || null }),
-        ...(progressPercent !== undefined && { 
-          progressPercent: progressPercent ? parseInt(progressPercent) : 0 
-        }),
-        ...(isPublished !== undefined && { isPublished: isPublished === 'true' }),
-        ...(displayOrder !== undefined && { 
-          displayOrder: displayOrder ? parseInt(displayOrder) : 0 
-        }),
-        ...(notes !== undefined && { notes: notes || null }),
-        ...(thumbnailPath && { thumbnailImage: thumbnailPath }),
-      },
-      include: {
-        customer: true,
-        images: true,
-      },
+    const parsedInvestors = safeJsonParse<InvestorAssignmentInput[]>(investorsJson)
+    const parsedExpenses = safeJsonParse<ProjectExpenseInput[]>(expensesJson)
+
+    const shouldSyncInvestors = investorsJson !== null
+    const shouldSyncExpenses = expensesJson !== null
+
+    const project = await prisma.$transaction(async (tx) => {
+      if (shouldSyncInvestors) {
+        await tx.projectInvestor.deleteMany({ where: { projectId: id } })
+
+        const assignments = Array.isArray(parsedInvestors) ? parsedInvestors : []
+        if (assignments.length > 0) {
+          await tx.projectInvestor.createMany({
+            data: assignments
+              .filter((a) => typeof a?.investorId === 'string' && a.investorId)
+              .map((a) => ({
+                projectId: id,
+                investorId: a.investorId,
+                investmentAmount:
+                  typeof a.investmentAmount === 'number' ? a.investmentAmount : null,
+              })),
+            skipDuplicates: true,
+          })
+        }
+      }
+
+      if (shouldSyncExpenses) {
+        await tx.projectExpense.deleteMany({ where: { projectId: id } })
+
+        const expenses = Array.isArray(parsedExpenses) ? parsedExpenses : []
+        if (expenses.length > 0) {
+          await tx.projectExpense.createMany({
+            data: expenses
+              .filter((e) => typeof e?.item === 'string' && e.item && typeof e.amount === 'number')
+              .map((e) => ({
+                projectId: id,
+                phase: e.phase || null,
+                category: e.category || null,
+                item: e.item,
+                amount: e.amount,
+                currency: e.currency || 'USD',
+                expenseDate: e.expenseDate ? new Date(e.expenseDate) : null,
+                notes: e.notes || null,
+              })),
+          })
+        }
+      }
+
+      return await tx.project.update({
+        where: { id },
+        data: {
+          ...(title && { title }),
+          ...(description !== undefined && { description: description || null }),
+          ...(location !== undefined && { location: location || null }),
+          ...(projectType && { projectType }),
+          ...(status && { status }),
+          ...(customerId !== undefined && { customerId: customerId || null }),
+          ...(budgetTotal !== undefined && {
+            budgetTotal: budgetTotal ? parseFloat(budgetTotal) : null,
+          }),
+          ...(actualCost !== undefined && {
+            actualCost: actualCost ? parseFloat(actualCost) : null,
+          }),
+          ...(contractDate !== undefined && {
+            contractDate: contractDate ? new Date(contractDate) : null,
+          }),
+          ...(startDate !== undefined && {
+            startDate: startDate ? new Date(startDate) : null,
+          }),
+          ...(endDatePlanned !== undefined && {
+            endDatePlanned: endDatePlanned ? new Date(endDatePlanned) : null,
+          }),
+          ...(actualEndDate !== undefined && {
+            actualEndDate: actualEndDate ? new Date(actualEndDate) : null,
+          }),
+          ...(investorName !== undefined && { investorName: investorName || null }),
+          ...(investorContact !== undefined && { investorContact: investorContact || null }),
+          ...(currentPhase !== undefined && { currentPhase: currentPhase || null }),
+          ...(progressPercent !== undefined && {
+            progressPercent: progressPercent ? parseInt(progressPercent) : 0,
+          }),
+          ...(isPublished !== undefined && { isPublished: isPublished === 'true' }),
+          ...(displayOrder !== undefined && {
+            displayOrder: displayOrder ? parseInt(displayOrder) : 0,
+          }),
+          ...(notes !== undefined && { notes: notes || null }),
+          ...(thumbnailPath && { thumbnailImage: thumbnailPath }),
+        },
+        include: {
+          customer: true,
+          images: true,
+          investors: {
+            include: {
+              investor: true,
+            },
+          },
+          expenses: true,
+        },
+      })
     })
 
     return NextResponse.json({

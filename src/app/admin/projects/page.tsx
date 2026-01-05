@@ -38,10 +38,67 @@ interface Project {
   updatedAt: string
 }
 
+interface Investor {
+  id: string
+  investorNumber: string
+  fullName: string
+  email: string | null
+  phone: string | null
+  isActive: boolean
+}
+
+interface ProjectInvestorAssignment {
+  investorId: string
+  investmentAmount: string // keep as string for input handling
+  investor?: Investor
+}
+
+interface ProjectExpenseRow {
+  phase: string
+  category: string
+  item: string
+  amount: string
+  currency: string
+  expenseDate: string
+  notes: string
+}
+
+interface ProjectImage {
+  id: string
+  imagePath: string
+  caption: string | null
+  phase: string | null
+  displayOrder: number
+  uploadedAt: string
+}
+
+interface ProjectExpenseFromApi {
+  phase: string | null
+  category: string | null
+  item: string
+  amount: number
+  currency: string
+  expenseDate: string | null
+  notes: string | null
+}
+
+interface ProjectInvestorFromApi {
+  investorId: string
+  investmentAmount: number | null
+  investor: Investor
+}
+
+interface ProjectDetails extends Project {
+  images: ProjectImage[]
+  investors: ProjectInvestorFromApi[]
+  expenses: ProjectExpenseFromApi[]
+}
+
 export default function AdminProjectsPage() {
   const { t } = useLanguage()
   const [projects, setProjects] = useState<Project[]>([])
   const [customers, setCustomers] = useState<Customer[]>([])
+  const [investors, setInvestors] = useState<Investor[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
@@ -67,11 +124,19 @@ export default function AdminProjectsPage() {
     notes: '',
   })
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
+  const [projectInvestors, setProjectInvestors] = useState<ProjectInvestorAssignment[]>([])
+  const [projectExpenses, setProjectExpenses] = useState<ProjectExpenseRow[]>([])
+  const [projectImages, setProjectImages] = useState<ProjectImage[]>([])
+  const [selectedInvestorId, setSelectedInvestorId] = useState('')
+  const [newImageFile, setNewImageFile] = useState<File | null>(null)
+  const [newImageCaption, setNewImageCaption] = useState('')
+  const [newImagePhase, setNewImagePhase] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     fetchProjects()
     fetchCustomers()
+    fetchInvestors()
   }, [])
 
   const fetchProjects = async () => {
@@ -93,6 +158,16 @@ export default function AdminProjectsPage() {
       setCustomers(data.customers || [])
     } catch (error) {
       console.error('Error fetching customers:', error)
+    }
+  }
+
+  const fetchInvestors = async () => {
+    try {
+      const res = await fetch('/api/investors')
+      const data = await res.json()
+      setInvestors(data.investors || [])
+    } catch (error) {
+      console.error('Error fetching investors:', error)
     }
   }
 
@@ -120,36 +195,87 @@ export default function AdminProjectsPage() {
       notes: '',
     })
     setThumbnailFile(null)
+    setProjectInvestors([])
+    setProjectExpenses([])
+    setProjectImages([])
+    setSelectedInvestorId('')
+    setNewImageFile(null)
+    setNewImageCaption('')
+    setNewImagePhase('')
     setShowForm(true)
   }
 
-  const handleEdit = (project: Project) => {
-    setEditingProject(project)
-    setFormData({
-      title: project.title,
-      description: project.description || '',
-      location: project.location || '',
-      projectType: project.projectType,
-      status: project.status,
-      customerId: project.customerId || '',
-      budgetTotal: project.budgetTotal?.toString() || '',
-      actualCost: project.actualCost?.toString() || '',
-      contractDate: project.contractDate ? project.contractDate.substring(0, 10) : '',
-      startDate: project.startDate ? project.startDate.substring(0, 10) : '',
-      endDatePlanned: project.endDatePlanned ? project.endDatePlanned.substring(0, 10) : '',
-      actualEndDate: project.actualEndDate ? project.actualEndDate.substring(0, 10) : '',
-      investorName: project.investorName || '',
-      investorContact: project.investorContact || '',
-      currentPhase: project.currentPhase || '',
-      progressPercent: project.progressPercent.toString(),
-      isPublished: project.isPublished,
-      displayOrder: project.displayOrder.toString(),
-      notes: project.notes || '',
-    })
-    setThumbnailFile(null)
-    setShowForm(true)
-    // スクロールをトップに
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+  const handleEdit = async (project: Project) => {
+    try {
+      const res = await fetch(`/api/projects/${project.id}`, { cache: 'no-store' })
+      const data = await res.json()
+      const p = (data.project || project) as ProjectDetails
+
+      setEditingProject(p)
+      setFormData({
+        title: p.title,
+        description: p.description || '',
+        location: p.location || '',
+        projectType: p.projectType,
+        status: p.status,
+        customerId: p.customerId || '',
+        budgetTotal: p.budgetTotal?.toString() || '',
+        actualCost: p.actualCost?.toString() || '',
+        contractDate: p.contractDate ? p.contractDate.substring(0, 10) : '',
+        startDate: p.startDate ? p.startDate.substring(0, 10) : '',
+        endDatePlanned: p.endDatePlanned ? p.endDatePlanned.substring(0, 10) : '',
+        actualEndDate: p.actualEndDate ? p.actualEndDate.substring(0, 10) : '',
+        investorName: p.investorName || '',
+        investorContact: p.investorContact || '',
+        currentPhase: p.currentPhase || '',
+        progressPercent: (p.progressPercent ?? 0).toString(),
+        isPublished: !!p.isPublished,
+        displayOrder: (p.displayOrder ?? 0).toString(),
+        notes: p.notes || '',
+      })
+
+      const investorRows: ProjectInvestorAssignment[] = Array.isArray(p.investors)
+        ? p.investors.map((pi) => ({
+            investorId: pi.investorId,
+            investmentAmount:
+              pi.investmentAmount === null || pi.investmentAmount === undefined
+                ? ''
+                : String(pi.investmentAmount),
+            investor: pi.investor,
+          }))
+        : []
+      setProjectInvestors(investorRows)
+
+      const expenseRows: ProjectExpenseRow[] = Array.isArray(p.expenses)
+        ? p.expenses.map((e) => ({
+            phase: e.phase || '',
+            category: e.category || '',
+            item: e.item || '',
+            amount: e.amount === null || e.amount === undefined ? '' : String(e.amount),
+            currency: e.currency || 'USD',
+            expenseDate: e.expenseDate ? String(e.expenseDate).substring(0, 10) : '',
+            notes: e.notes || '',
+          }))
+        : []
+      setProjectExpenses(expenseRows)
+
+      setProjectImages(Array.isArray(p.images) ? p.images : [])
+      setSelectedInvestorId('')
+      setThumbnailFile(null)
+      setNewImageFile(null)
+      setNewImageCaption('')
+      setNewImagePhase('')
+      setShowForm(true)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (error) {
+      console.error('Error fetching project details:', error)
+      // fallback to basic
+      setEditingProject(project)
+      setProjectInvestors([])
+      setProjectExpenses([])
+      setProjectImages([])
+      setShowForm(true)
+    }
   }
 
   const handleDelete = async (id: string) => {
@@ -191,14 +317,43 @@ export default function AdminProjectsPage() {
       if (formData.startDate) data.append('startDate', formData.startDate)
       if (formData.endDatePlanned) data.append('endDatePlanned', formData.endDatePlanned)
       if (formData.actualEndDate) data.append('actualEndDate', formData.actualEndDate)
-      if (formData.investorName) data.append('investorName', formData.investorName)
-      if (formData.investorContact) data.append('investorContact', formData.investorContact)
       if (formData.currentPhase) data.append('currentPhase', formData.currentPhase)
       data.append('progressPercent', formData.progressPercent)
       data.append('isPublished', formData.isPublished.toString())
       data.append('displayOrder', formData.displayOrder)
       if (formData.notes) data.append('notes', formData.notes)
       if (thumbnailFile) data.append('thumbnail', thumbnailFile)
+
+      // Investors (multiple) + investment amounts
+      data.append(
+        'investorsJson',
+        JSON.stringify(
+          projectInvestors
+            .filter((pi) => pi.investorId)
+            .map((pi) => ({
+              investorId: pi.investorId,
+              investmentAmount: pi.investmentAmount ? Number(pi.investmentAmount) : null,
+            }))
+        )
+      )
+
+      // Project expenses (phase/item based)
+      data.append(
+        'expensesJson',
+        JSON.stringify(
+          projectExpenses
+            .filter((e) => e.item && e.amount)
+            .map((e) => ({
+              phase: e.phase || null,
+              category: e.category || null,
+              item: e.item,
+              amount: Number(e.amount),
+              currency: e.currency || 'USD',
+              expenseDate: e.expenseDate || null,
+              notes: e.notes || null,
+            }))
+        )
+      )
 
       const url = editingProject
         ? `/api/projects/${editingProject.id}`
@@ -211,14 +366,25 @@ export default function AdminProjectsPage() {
       })
 
       if (res.ok) {
+        const saved = await res.json().catch(() => null)
+        const savedProject = saved?.project as Project | undefined
+
         alert(
           editingProject
             ? t('admin.projects.updateSuccess')
             : t('admin.projects.createSuccess')
         )
-        setShowForm(false)
-        fetchProjects()
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        await fetchProjects()
+
+        // After create, keep the form open so the user can add images immediately
+        if (!editingProject && savedProject) {
+          setEditingProject(savedProject)
+          // refresh details (includes investors/expenses/images)
+          await handleEdit(savedProject)
+        } else {
+          setShowForm(false)
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
       } else {
         const error = await res.json()
         alert(error.error || 'Failed to save project')
@@ -228,6 +394,111 @@ export default function AdminProjectsPage() {
       alert('Failed to save project')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const addInvestorToProject = () => {
+    const id = selectedInvestorId
+    if (!id) return
+    if (projectInvestors.some((pi) => pi.investorId === id)) return
+    const investor = investors.find((i) => i.id === id)
+    setProjectInvestors([
+      ...projectInvestors,
+      { investorId: id, investmentAmount: '', investor },
+    ])
+    setSelectedInvestorId('')
+  }
+
+  const removeInvestorFromProject = (investorId: string) => {
+    setProjectInvestors(projectInvestors.filter((pi) => pi.investorId !== investorId))
+  }
+
+  const addExpenseRow = () => {
+    setProjectExpenses([
+      ...projectExpenses,
+      {
+        phase: '',
+        category: '',
+        item: '',
+        amount: '',
+        currency: 'USD',
+        expenseDate: '',
+        notes: '',
+      },
+    ])
+  }
+
+  const removeExpenseRow = (index: number) => {
+    setProjectExpenses(projectExpenses.filter((_, i) => i !== index))
+  }
+
+  const uploadProjectImage = async () => {
+    if (!editingProject?.id || !newImageFile) return
+    try {
+      const fd = new FormData()
+      fd.append('file', newImageFile)
+      if (newImageCaption) fd.append('caption', newImageCaption)
+      if (newImagePhase) fd.append('phase', newImagePhase)
+
+      const res = await fetch(`/api/projects/${editingProject.id}/images`, {
+        method: 'POST',
+        body: fd,
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        alert(err.error || 'Failed to upload image')
+        return
+      }
+      setNewImageFile(null)
+      setNewImageCaption('')
+      setNewImagePhase('')
+      await handleEdit(editingProject)
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      alert('Failed to upload image')
+    }
+  }
+
+  const deleteProjectImage = async (imageId: string) => {
+    if (!editingProject?.id) return
+    if (!confirm('Delete this image?')) return
+    try {
+      const res = await fetch(`/api/projects/${editingProject.id}/images/${imageId}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        alert(err.error || 'Failed to delete image')
+        return
+      }
+      await handleEdit(editingProject)
+    } catch (error) {
+      console.error('Error deleting image:', error)
+      alert('Failed to delete image')
+    }
+  }
+
+  const updateProjectImageMeta = async (img: ProjectImage) => {
+    if (!editingProject?.id) return
+    try {
+      const res = await fetch(`/api/projects/${editingProject.id}/images/${img.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          caption: img.caption,
+          phase: img.phase,
+          displayOrder: img.displayOrder,
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        alert(err.error || 'Failed to update image')
+        return
+      }
+      await handleEdit(editingProject)
+    } catch (error) {
+      console.error('Error updating image:', error)
+      alert('Failed to update image')
     }
   }
 
@@ -459,38 +730,224 @@ export default function AdminProjectsPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
                   />
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-brand-navy mb-2">
-                    {t('admin.projects.form.investorName')}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.investorName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, investorName: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-brand-navy mb-2">
-                    {t('admin.projects.form.investorContact')}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.investorContact}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        investorContact: e.target.value,
-                      })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                  />
-                </div>
               </div>
+
+              {/* Investors (multiple) */}
+              <div className="mt-6">
+                <div className="flex flex-col md:flex-row md:items-end gap-3">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-brand-navy mb-2">
+                      Investors
+                    </label>
+                    <select
+                      value={selectedInvestorId}
+                      onChange={(e) => setSelectedInvestorId(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                    >
+                      <option value="">Select an investor to add</option>
+                      {investors.map((inv) => (
+                        <option key={inv.id} value={inv.id}>
+                          {inv.fullName} ({inv.investorNumber})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addInvestorToProject}
+                    className="px-5 py-2 bg-brand-navy text-white rounded-md hover:bg-opacity-90 transition-colors font-medium"
+                  >
+                    Add Investor
+                  </button>
+                </div>
+
+                {projectInvestors.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    {projectInvestors.map((pi, idx) => {
+                      const inv = pi.investor || investors.find((i) => i.id === pi.investorId)
+                      return (
+                        <div
+                          key={pi.investorId}
+                          className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center border border-gray-200 rounded-md p-3"
+                        >
+                          <div className="md:col-span-5">
+                            <div className="text-sm font-semibold text-brand-navy">
+                              {inv ? `${inv.fullName} (${inv.investorNumber})` : pi.investorId}
+                            </div>
+                            {inv?.email && (
+                              <div className="text-xs text-gray-500 truncate">{inv.email}</div>
+                            )}
+                          </div>
+                          <div className="md:col-span-5">
+                            <label className="block text-xs text-gray-600 mb-1">
+                              Investment Amount (USD)
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={pi.investmentAmount}
+                              onChange={(e) => {
+                                const next = [...projectInvestors]
+                                next[idx] = { ...next[idx], investmentAmount: e.target.value }
+                                setProjectInvestors(next)
+                              }}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                            />
+                          </div>
+                          <div className="md:col-span-2 flex md:justify-end">
+                            <button
+                              type="button"
+                              onClick={() => removeInvestorFromProject(pi.investorId)}
+                              className="px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors font-medium"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Cost Breakdown (Expenses) */}
+            <div>
+              <h2 className="text-lg md:text-xl font-bold text-brand-navy mb-4 pb-2 border-b">
+                Cost Breakdown
+              </h2>
+
+              <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between mb-4">
+                <p className="text-sm text-brand-gray">
+                  Add costs by phase (e.g., Foundation, Bathroom, Painting) with amounts.
+                </p>
+                <button
+                  type="button"
+                  onClick={addExpenseRow}
+                  className="px-5 py-2 bg-brand-navy text-white rounded-md hover:bg-opacity-90 transition-colors font-medium"
+                >
+                  Add Cost Row
+                </button>
+              </div>
+
+              {projectExpenses.length === 0 ? (
+                <div className="text-sm text-gray-500">No cost rows yet.</div>
+              ) : (
+                <div className="space-y-3">
+                  {projectExpenses.map((row, index) => (
+                    <div
+                      key={index}
+                      className="border border-gray-200 rounded-md p-4 space-y-3"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">Phase</label>
+                          <input
+                            type="text"
+                            value={row.phase}
+                            onChange={(e) => {
+                              const next = [...projectExpenses]
+                              next[index] = { ...next[index], phase: e.target.value }
+                              setProjectExpenses(next)
+                            }}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">Category</label>
+                          <input
+                            type="text"
+                            value={row.category}
+                            onChange={(e) => {
+                              const next = [...projectExpenses]
+                              next[index] = { ...next[index], category: e.target.value }
+                              setProjectExpenses(next)
+                            }}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">Item</label>
+                          <input
+                            type="text"
+                            value={row.item}
+                            onChange={(e) => {
+                              const next = [...projectExpenses]
+                              next[index] = { ...next[index], item: e.target.value }
+                              setProjectExpenses(next)
+                            }}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">Amount</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={row.amount}
+                            onChange={(e) => {
+                              const next = [...projectExpenses]
+                              next[index] = { ...next[index], amount: e.target.value }
+                              setProjectExpenses(next)
+                            }}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">Currency</label>
+                          <input
+                            type="text"
+                            value={row.currency}
+                            onChange={(e) => {
+                              const next = [...projectExpenses]
+                              next[index] = { ...next[index], currency: e.target.value }
+                              setProjectExpenses(next)
+                            }}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">Date</label>
+                          <input
+                            type="date"
+                            value={row.expenseDate}
+                            onChange={(e) => {
+                              const next = [...projectExpenses]
+                              next[index] = { ...next[index], expenseDate: e.target.value }
+                              setProjectExpenses(next)
+                            }}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs text-gray-600 mb-1">Notes</label>
+                        <textarea
+                          value={row.notes}
+                          onChange={(e) => {
+                            const next = [...projectExpenses]
+                            next[index] = { ...next[index], notes: e.target.value }
+                            setProjectExpenses(next)
+                          }}
+                          rows={2}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                        />
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => removeExpenseRow(index)}
+                          className="px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors font-medium"
+                        >
+                          Remove Row
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Schedule */}
@@ -672,6 +1129,165 @@ export default function AdminProjectsPage() {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Project Images (multiple, excluding thumbnail) */}
+            <div>
+              <h2 className="text-lg md:text-xl font-bold text-brand-navy mb-4 pb-2 border-b">
+                Project Images
+              </h2>
+
+              {!editingProject?.id ? (
+                <p className="text-sm text-gray-500">
+                  Save the project first to upload additional images.
+                </p>
+              ) : (
+                <div className="space-y-6">
+                  {/* Upload */}
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-brand-navy mb-2">
+                          Upload Image
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => setNewImageFile(e.target.files?.[0] || null)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-brand-navy file:text-white hover:file:bg-opacity-90"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-brand-navy mb-2">
+                          Caption
+                        </label>
+                        <input
+                          type="text"
+                          value={newImageCaption}
+                          onChange={(e) => setNewImageCaption(e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-brand-navy mb-2">
+                          Phase
+                        </label>
+                        <input
+                          type="text"
+                          value={newImagePhase}
+                          onChange={(e) => setNewImagePhase(e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <button
+                        type="button"
+                        onClick={uploadProjectImage}
+                        disabled={!newImageFile}
+                        className="px-6 py-2 bg-brand-navy text-white rounded-md hover:bg-opacity-90 disabled:opacity-50 transition-colors font-medium"
+                      >
+                        Upload
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Existing images */}
+                  {projectImages.length === 0 ? (
+                    <p className="text-sm text-gray-500">No additional images yet.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {projectImages.map((img, idx) => (
+                        <div
+                          key={img.id}
+                          className="border border-gray-200 rounded-lg p-4"
+                        >
+                          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+                            <div className="md:col-span-3">
+                              <img
+                                src={img.imagePath}
+                                alt={img.caption || 'Project image'}
+                                className="w-full h-40 object-cover rounded-md border"
+                              />
+                            </div>
+                            <div className="md:col-span-7 space-y-3">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div>
+                                  <label className="block text-xs text-gray-600 mb-1">
+                                    Caption
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={img.caption || ''}
+                                    onChange={(e) => {
+                                      const next = [...projectImages]
+                                      next[idx] = { ...next[idx], caption: e.target.value }
+                                      setProjectImages(next)
+                                    }}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs text-gray-600 mb-1">
+                                    Phase
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={img.phase || ''}
+                                    onChange={(e) => {
+                                      const next = [...projectImages]
+                                      next[idx] = { ...next[idx], phase: e.target.value }
+                                      setProjectImages(next)
+                                    }}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs text-gray-600 mb-1">
+                                    Display Order
+                                  </label>
+                                  <input
+                                    type="number"
+                                    value={img.displayOrder}
+                                    onChange={(e) => {
+                                      const next = [...projectImages]
+                                      next[idx] = {
+                                        ...next[idx],
+                                        displayOrder: Number(e.target.value),
+                                      }
+                                      setProjectImages(next)
+                                    }}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                                  />
+                                </div>
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {new Date(img.uploadedAt).toLocaleString()}
+                              </div>
+                            </div>
+                            <div className="md:col-span-2 flex md:flex-col gap-2 md:items-end">
+                              <button
+                                type="button"
+                                onClick={() => updateProjectImageMeta(img)}
+                                className="px-4 py-2 bg-blue-50 text-brand-navy rounded-md hover:bg-blue-100 transition-colors font-medium"
+                              >
+                                Save
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => deleteProjectImage(img.id)}
+                                className="px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors font-medium"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Form Actions */}

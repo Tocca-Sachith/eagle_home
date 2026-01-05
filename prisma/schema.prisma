@@ -101,6 +101,7 @@ model Project {
   
   images          ProjectImage[]
   investors       ProjectInvestor[]
+  expenses        ProjectExpense[]
 
   @@index([status])
   @@index([createdAt])
@@ -191,9 +192,33 @@ model ProjectInvestor {
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   investor    Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
   assignedAt  DateTime @default(now())
+  investmentAmount Float?
   
   @@unique([projectId, investorId])
   @@index([projectId])
   @@index([investorId])
+}
+
+model ProjectExpense {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // e.g., "Foundation", "Bathroom", "Painting", etc.
+  phase       String?
+  // Optional finer classification, e.g., "Materials", "Labor"
+  category    String?
+  // Short label for the expense item
+  item        String
+  amount      Float
+  currency    String   @default("USD")
+  expenseDate DateTime?
+  notes       String?  @db.Text
+
+  createdAt   DateTime @default(now())
+
+  @@index([projectId])
+  @@index([phase])
+  @@index([expenseDate])
 }
 
