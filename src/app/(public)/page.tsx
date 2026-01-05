@@ -15,11 +15,31 @@ interface HeroImage {
   displayOrder: number
 }
 
+interface ServiceSummary {
+  id: string
+  title: string
+  description: string
+  category: string
+  icon: string | null
+  imagePath: string | null
+}
+
+interface ProjectSummary {
+  id: string
+  title: string
+  description: string | null
+  location: string | null
+  projectType: string
+  thumbnailImage: string | null
+}
+
 export default function HomePage() {
   const { t } = useLanguage();
   const [heroImages, setHeroImages] = useState<HeroImage[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState<ProjectSummary[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
 
   useEffect(() => {
     fetchHeroImages();
@@ -75,7 +95,7 @@ export default function HomePage() {
   };
 
   // Fetch services from database
-  const [services, setServices] = useState<any[]>([]);
+  const [services, setServices] = useState<ServiceSummary[]>([]);
   const [servicesLoading, setServicesLoading] = useState(true);
 
   useEffect(() => {
@@ -116,6 +136,32 @@ export default function HomePage() {
       console.error('Error fetching services:', error);
     } finally {
       setServicesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      const res = await fetch('/api/projects?publishedOnly=true', {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
+      const data = await res.json();
+      if (data.projects && data.projects.length > 0) {
+        setProjects(data.projects.slice(0, 6)); // Show max 6 projects on homepage
+      } else {
+        setProjects([]);
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      setProjects([]);
+    } finally {
+      setProjectsLoading(false);
     }
   };
 
@@ -246,6 +292,77 @@ export default function HomePage() {
               className="inline-block bg-brand-navy text-white px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-colors"
             >
               View All
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Projects Overview */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-brand-navy mb-4">{t('common.projects')}</h2>
+            <p className="text-xl text-brand-gray max-w-2xl mx-auto">
+              {t('projects.hero.subtitle')}
+            </p>
+          </div>
+
+          {projectsLoading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">{t('common.loading')}</p>
+            </div>
+          ) : projects.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">No projects available at the moment.</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {projects.map((project) => (
+                <Link
+                  key={project.id}
+                  href={`/projects/${project.id}`}
+                  className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-xl transition-shadow block"
+                >
+                  {project.thumbnailImage ? (
+                    <div className="relative w-full h-48">
+                      <Image
+                        src={project.thumbnailImage}
+                        alt={project.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="bg-gradient-to-br from-brand-navy to-brand-gray h-48 flex items-center justify-center">
+                      <span className="text-6xl">🏠</span>
+                    </div>
+                  )}
+
+                  <div className="p-6">
+                    <div className="text-sm text-brand-gold font-semibold mb-2">
+                      {project.projectType}
+                    </div>
+                    <h3 className="text-2xl font-bold text-brand-navy mb-2">
+                      {project.title}
+                    </h3>
+                    {project.location && (
+                      <p className="text-sm text-brand-gray mb-4">{project.location}</p>
+                    )}
+                    {project.description && (
+                      <p className="text-brand-gray line-clamp-3">{project.description}</p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <div className="text-center mt-12">
+            <Link
+              href="/projects"
+              className="inline-block bg-brand-navy text-white px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-colors"
+            >
+              {t('common.viewAll')}
             </Link>
           </div>
         </div>
