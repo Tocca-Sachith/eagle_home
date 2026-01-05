@@ -102,6 +102,7 @@ model Project {
   images          ProjectImage[]
   investors       ProjectInvestor[]
   expenses        ProjectExpense[]
+  investments     ProjectInvestment[]
 
   @@index([status])
   @@index([createdAt])
@@ -177,6 +178,7 @@ model Investor {
   
   // Projects relationship (many-to-many)
   projects       ProjectInvestor[]
+  investments    ProjectInvestment[]
 
   @@index([investorNumber])
   @@index([email])
@@ -220,5 +222,24 @@ model ProjectExpense {
   @@index([projectId])
   @@index([phase])
   @@index([expenseDate])
+}
+
+// Investor payments (multiple installments) per project
+model ProjectInvestment {
+  id            String   @id @default(cuid())
+  projectId     String
+  investorId    String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  investor      Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  installmentNo Int
+  amount        Float
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+
+  @@unique([projectId, investorId, installmentNo])
+  @@index([projectId])
+  @@index([investorId])
+  @@index([paidAt])
 }
 

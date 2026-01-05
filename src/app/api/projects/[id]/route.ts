@@ -10,6 +10,14 @@ type InvestorAssignmentInput = {
   investmentAmount?: number | null
 }
 
+type InvestorPaymentsInput = {
+  investorId: string
+  payments: Array<{
+    amount: number
+    paidAt?: string | null
+  }>
+}
+
 type ProjectExpenseInput = {
   phase?: string | null
   category?: string | null
@@ -71,6 +79,23 @@ export async function GET(
               ],
             }
           : false,
+        investments: isAdmin
+          ? {
+              include: {
+                investor: {
+                  select: {
+                    id: true,
+                    investorNumber: true,
+                    fullName: true,
+                    email: true,
+                    phone: true,
+                    isActive: true,
+                  },
+                },
+              },
+              orderBy: [{ investorId: 'asc' as const }, { installmentNo: 'asc' as const }],
+            }
+          : false,
       },
     })
 
@@ -126,6 +151,7 @@ export async function PUT(
     const notes = formData.get('notes') as string
     const thumbnailFile = formData.get('thumbnail') as File | null
     const investorsJson = formData.get('investorsJson') as string | null
+    const investorPaymentsJson = formData.get('investorPaymentsJson') as string | null
     const expensesJson = formData.get('expensesJson') as string | null
 
     // Get existing project
@@ -169,28 +195,89 @@ export async function PUT(
     }
 
     const parsedInvestors = safeJsonParse<InvestorAssignmentInput[]>(investorsJson)
+    const parsedInvestorPayments = safeJsonParse<InvestorPaymentsInput[]>(investorPaymentsJson)
     const parsedExpenses = safeJsonParse<ProjectExpenseInput[]>(expensesJson)
 
-    const shouldSyncInvestors = investorsJson !== null
+    const shouldSyncInvestors = investorsJson !== null || investorPaymentsJson !== null
     const shouldSyncExpenses = expensesJson !== null
+    const shouldSyncInvestorPayments = investorPaymentsJson !== null || investorsJson !== null
 
     const project = await prisma.$transaction(async (tx) => {
       if (shouldSyncInvestors) {
         await tx.projectInvestor.deleteMany({ where: { projectId: id } })
 
         const assignments = Array.isArray(parsedInvestors) ? parsedInvestors : []
-        if (assignments.length > 0) {
+        const paymentGroups = Array.isArray(parsedInvestorPayments) ? parsedInvestorPayments : []
+
+        const investorIds = new Set<string>()
+        for (const a of assignments) {
+          if (a?.investorId) investorIds.add(a.investorId)
+        }
+        for (const pg of paymentGroups) {
+          if (pg?.investorId) investorIds.add(pg.investorId)
+        }
+
+        const uniqueInvestorIds = Array.from(investorIds)
+
+        if (uniqueInvestorIds.length > 0) {
           await tx.projectInvestor.createMany({
-            data: assignments
-              .filter((a) => typeof a?.investorId === 'string' && a.investorId)
-              .map((a) => ({
-                projectId: id,
-                investorId: a.investorId,
-                investmentAmount:
-                  typeof a.investmentAmount === 'number' ? a.investmentAmount : null,
-              })),
+            data: uniqueInvestorIds.map((investorId) => ({
+              projectId: id,
+              investorId,
+              investmentAmount: null,
+            })),
             skipDuplicates: true,
           })
+        }
+      }
+
+      if (shouldSyncInvestorPayments) {
+        await tx.projectInvestment.deleteMany({ where: { projectId: id } })
+
+        const paymentGroups = Array.isArray(parsedInvestorPayments) ? parsedInvestorPayments : []
+
+        if (paymentGroups.length > 0) {
+          const rows: Array<{
+            projectId: string
+            investorId: string
+            installmentNo: number
+            amount: number
+            paidAt: Date | null
+          }> = []
+
+          for (const group of paymentGroups) {
+            if (!group?.investorId) continue
+            const payments = Array.isArray(group.payments) ? group.payments : []
+            payments.forEach((p, idx) => {
+              if (typeof p?.amount !== 'number') return
+              rows.push({
+                projectId: id,
+                investorId: group.investorId,
+                installmentNo: idx + 1,
+                amount: p.amount,
+                paidAt: p.paidAt ? new Date(p.paidAt) : null,
+              })
+            })
+          }
+
+          if (rows.length > 0) {
+            await tx.projectInvestment.createMany({ data: rows })
+          }
+        } else {
+          // Backward compatibility: investorsJson with investmentAmount becomes a single installment
+          const assignments = Array.isArray(parsedInvestors) ? parsedInvestors : []
+          const legacyRows = assignments
+            .filter((a) => a?.investorId && typeof a.investmentAmount === 'number')
+            .map((a) => ({
+              projectId: id,
+              investorId: a.investorId,
+              installmentNo: 1,
+              amount: a.investmentAmount as number,
+              paidAt: null,
+            }))
+          if (legacyRows.length > 0) {
+            await tx.projectInvestment.createMany({ data: legacyRows })
+          }
         }
       }
 
@@ -265,6 +352,11 @@ export async function PUT(
             },
           },
           expenses: true,
+          investments: {
+            include: {
+              investor: true,
+            },
+          },
         },
       })
     })

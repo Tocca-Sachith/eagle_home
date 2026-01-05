@@ -49,18 +49,18 @@ interface Investor {
 
 interface ProjectInvestorAssignment {
   investorId: string
-  investmentAmount: string // keep as string for input handling
   investor?: Investor
+  payments: Array<{
+    amount: string
+    paidAt: string
+  }>
 }
 
 interface ProjectExpenseRow {
-  phase: string
-  category: string
-  item: string
+  name: string
+  content: string
   amount: string
-  currency: string
-  expenseDate: string
-  notes: string
+  date: string
 }
 
 interface ProjectImage {
@@ -88,10 +88,19 @@ interface ProjectInvestorFromApi {
   investor: Investor
 }
 
+interface ProjectInvestmentFromApi {
+  investorId: string
+  installmentNo: number
+  amount: number
+  paidAt: string | null
+  investor: Investor
+}
+
 interface ProjectDetails extends Project {
   images: ProjectImage[]
   investors: ProjectInvestorFromApi[]
   expenses: ProjectExpenseFromApi[]
+  investments: ProjectInvestmentFromApi[]
 }
 
 export default function AdminProjectsPage() {
@@ -128,10 +137,10 @@ export default function AdminProjectsPage() {
   const [projectExpenses, setProjectExpenses] = useState<ProjectExpenseRow[]>([])
   const [projectImages, setProjectImages] = useState<ProjectImage[]>([])
   const [selectedInvestorId, setSelectedInvestorId] = useState('')
-  const [newImageFile, setNewImageFile] = useState<File | null>(null)
-  const [newImageCaption, setNewImageCaption] = useState('')
-  const [newImagePhase, setNewImagePhase] = useState('')
+  const [newImageFiles, setNewImageFiles] = useState<File[]>([])
+  const [reorderingImages, setReorderingImages] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
 
   useEffect(() => {
     fetchProjects()
@@ -199,9 +208,7 @@ export default function AdminProjectsPage() {
     setProjectExpenses([])
     setProjectImages([])
     setSelectedInvestorId('')
-    setNewImageFile(null)
-    setNewImageCaption('')
-    setNewImagePhase('')
+    setNewImageFiles([])
     setShowForm(true)
   }
 
@@ -237,24 +244,35 @@ export default function AdminProjectsPage() {
       const investorRows: ProjectInvestorAssignment[] = Array.isArray(p.investors)
         ? p.investors.map((pi) => ({
             investorId: pi.investorId,
-            investmentAmount:
-              pi.investmentAmount === null || pi.investmentAmount === undefined
-                ? ''
-                : String(pi.investmentAmount),
             investor: pi.investor,
+            payments: [],
           }))
         : []
-      setProjectInvestors(investorRows)
+
+      // Group payments by investorId (installments)
+      const investmentRows = Array.isArray(p.investments) ? p.investments : []
+      const paymentsByInvestor = new Map<string, Array<{ amount: string; paidAt: string }>>()
+      for (const inv of investmentRows) {
+        const list = paymentsByInvestor.get(inv.investorId) || []
+        list.push({
+          amount: String(inv.amount),
+          paidAt: inv.paidAt ? String(inv.paidAt).substring(0, 10) : '',
+        })
+        paymentsByInvestor.set(inv.investorId, list)
+      }
+
+      const mergedInvestors = investorRows.map((row) => ({
+        ...row,
+        payments: paymentsByInvestor.get(row.investorId) || [],
+      }))
+      setProjectInvestors(mergedInvestors)
 
       const expenseRows: ProjectExpenseRow[] = Array.isArray(p.expenses)
         ? p.expenses.map((e) => ({
-            phase: e.phase || '',
-            category: e.category || '',
-            item: e.item || '',
+            name: e.phase || '',
+            content: e.item || '',
             amount: e.amount === null || e.amount === undefined ? '' : String(e.amount),
-            currency: e.currency || 'USD',
-            expenseDate: e.expenseDate ? String(e.expenseDate).substring(0, 10) : '',
-            notes: e.notes || '',
+            date: e.expenseDate ? String(e.expenseDate).substring(0, 10) : '',
           }))
         : []
       setProjectExpenses(expenseRows)
@@ -262,9 +280,7 @@ export default function AdminProjectsPage() {
       setProjectImages(Array.isArray(p.images) ? p.images : [])
       setSelectedInvestorId('')
       setThumbnailFile(null)
-      setNewImageFile(null)
-      setNewImageCaption('')
-      setNewImagePhase('')
+      setNewImageFiles([])
       setShowForm(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (error) {
@@ -330,9 +346,23 @@ export default function AdminProjectsPage() {
         JSON.stringify(
           projectInvestors
             .filter((pi) => pi.investorId)
+            .map((pi) => ({ investorId: pi.investorId }))
+        )
+      )
+
+      data.append(
+        'investorPaymentsJson',
+        JSON.stringify(
+          projectInvestors
+            .filter((pi) => pi.investorId)
             .map((pi) => ({
               investorId: pi.investorId,
-              investmentAmount: pi.investmentAmount ? Number(pi.investmentAmount) : null,
+              payments: (pi.payments || [])
+                .filter((p) => p.amount)
+                .map((p) => ({
+                  amount: Number(p.amount),
+                  paidAt: p.paidAt || null,
+                })),
             }))
         )
       )
@@ -342,15 +372,15 @@ export default function AdminProjectsPage() {
         'expensesJson',
         JSON.stringify(
           projectExpenses
-            .filter((e) => e.item && e.amount)
+            .filter((e) => e.name && e.amount)
             .map((e) => ({
-              phase: e.phase || null,
-              category: e.category || null,
-              item: e.item,
+              phase: e.name || null,
+              category: null,
+              item: e.content || '',
               amount: Number(e.amount),
-              currency: e.currency || 'USD',
-              expenseDate: e.expenseDate || null,
-              notes: e.notes || null,
+              currency: 'USD',
+              expenseDate: e.date || null,
+              notes: null,
             }))
         )
       )
@@ -404,7 +434,7 @@ export default function AdminProjectsPage() {
     const investor = investors.find((i) => i.id === id)
     setProjectInvestors([
       ...projectInvestors,
-      { investorId: id, investmentAmount: '', investor },
+      { investorId: id, investor, payments: [{ amount: '', paidAt: '' }] },
     ])
     setSelectedInvestorId('')
   }
@@ -413,17 +443,59 @@ export default function AdminProjectsPage() {
     setProjectInvestors(projectInvestors.filter((pi) => pi.investorId !== investorId))
   }
 
+  const addInvestorPayment = (investorId: string) => {
+    setProjectInvestors(
+      projectInvestors.map((pi) =>
+        pi.investorId === investorId
+          ? {
+              ...pi,
+              payments: [...(pi.payments || []), { amount: '', paidAt: '' }],
+            }
+          : pi
+      )
+    )
+  }
+
+  const removeInvestorPayment = (investorId: string, paymentIndex: number) => {
+    setProjectInvestors(
+      projectInvestors.map((pi) =>
+        pi.investorId === investorId
+          ? {
+              ...pi,
+              payments: (pi.payments || []).filter((_, idx) => idx !== paymentIndex),
+            }
+          : pi
+      )
+    )
+  }
+
+  const updateInvestorPayment = (
+    investorId: string,
+    paymentIndex: number,
+    patch: Partial<{ amount: string; paidAt: string }>
+  ) => {
+    setProjectInvestors(
+      projectInvestors.map((pi) => {
+        if (pi.investorId !== investorId) return pi
+        const payments = [...(pi.payments || [])]
+        payments[paymentIndex] = { ...payments[paymentIndex], ...patch }
+        return { ...pi, payments }
+      })
+    )
+  }
+
+  const investorPaymentTotal = (payments: Array<{ amount: string }>) => {
+    return (payments || []).reduce((sum, p) => sum + (p.amount ? Number(p.amount) : 0), 0)
+  }
+
   const addExpenseRow = () => {
     setProjectExpenses([
       ...projectExpenses,
       {
-        phase: '',
-        category: '',
-        item: '',
+        name: '',
+        content: '',
         amount: '',
-        currency: 'USD',
-        expenseDate: '',
-        notes: '',
+        date: '',
       },
     ])
   }
@@ -432,30 +504,56 @@ export default function AdminProjectsPage() {
     setProjectExpenses(projectExpenses.filter((_, i) => i !== index))
   }
 
-  const uploadProjectImage = async () => {
-    if (!editingProject?.id || !newImageFile) return
+  const uploadProjectImages = async () => {
+    if (!editingProject?.id || newImageFiles.length === 0) return
     try {
-      const fd = new FormData()
-      fd.append('file', newImageFile)
-      if (newImageCaption) fd.append('caption', newImageCaption)
-      if (newImagePhase) fd.append('phase', newImagePhase)
-
-      const res = await fetch(`/api/projects/${editingProject.id}/images`, {
-        method: 'POST',
-        body: fd,
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        alert(err.error || 'Failed to upload image')
-        return
+      for (const file of newImageFiles) {
+        const fd = new FormData()
+        fd.append('file', file)
+        const res = await fetch(`/api/projects/${editingProject.id}/images`, {
+          method: 'POST',
+          body: fd,
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          alert(err.error || 'Failed to upload image')
+          return
+        }
       }
-      setNewImageFile(null)
-      setNewImageCaption('')
-      setNewImagePhase('')
+      setNewImageFiles([])
       await handleEdit(editingProject)
     } catch (error) {
-      console.error('Error uploading image:', error)
-      alert('Failed to upload image')
+      console.error('Error uploading images:', error)
+      alert('Failed to upload images')
+    }
+  }
+
+  const reorderProjectImages = async (next: ProjectImage[]) => {
+    if (!editingProject?.id) return
+    try {
+      setReorderingImages(true)
+      const withOrder = next.map((img, idx) => ({ ...img, displayOrder: idx }))
+      setProjectImages(withOrder)
+
+      await Promise.all(
+        withOrder.map((img) =>
+          fetch(`/api/projects/${editingProject.id}/images/${img.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              caption: img.caption,
+              phase: img.phase,
+              displayOrder: img.displayOrder,
+            }),
+          })
+        )
+      )
+      await handleEdit(editingProject)
+    } catch (error) {
+      console.error('Error reordering images:', error)
+      alert('Failed to reorder images')
+    } finally {
+      setReorderingImages(false)
     }
   }
 
@@ -745,11 +843,13 @@ export default function AdminProjectsPage() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
                     >
                       <option value="">Select an investor to add</option>
-                      {investors.map((inv) => (
-                        <option key={inv.id} value={inv.id}>
-                          {inv.fullName} ({inv.investorNumber})
-                        </option>
-                      ))}
+                      {investors
+                        .filter((inv) => !projectInvestors.some((pi) => pi.investorId === inv.id))
+                        .map((inv) => (
+                          <option key={inv.id} value={inv.id}>
+                            {inv.fullName} ({inv.investorNumber})
+                          </option>
+                        ))}
                     </select>
                   </div>
                   <button
@@ -763,45 +863,87 @@ export default function AdminProjectsPage() {
 
                 {projectInvestors.length > 0 && (
                   <div className="mt-4 space-y-3">
-                    {projectInvestors.map((pi, idx) => {
+                    {projectInvestors.map((pi) => {
                       const inv = pi.investor || investors.find((i) => i.id === pi.investorId)
+                      const total = investorPaymentTotal(pi.payments || [])
                       return (
                         <div
                           key={pi.investorId}
-                          className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center border border-gray-200 rounded-md p-3"
+                          className="border border-gray-200 rounded-md p-4 space-y-3"
                         >
-                          <div className="md:col-span-5">
+                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                             <div className="text-sm font-semibold text-brand-navy">
                               {inv ? `${inv.fullName} (${inv.investorNumber})` : pi.investorId}
                             </div>
-                            {inv?.email && (
-                              <div className="text-xs text-gray-500 truncate">{inv.email}</div>
+                            <div className="text-sm font-semibold text-brand-navy">
+                              Total: {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(total)}
+                            </div>
+                          </div>
+
+                          {inv?.email && <div className="text-xs text-gray-500 truncate">{inv.email}</div>}
+
+                          {/* Payments (1st/2nd/3rd...) */}
+                          <div className="space-y-2">
+                            {(pi.payments || []).length === 0 ? (
+                              <div className="text-sm text-gray-500">No payments yet.</div>
+                            ) : (
+                              (pi.payments || []).map((p, pIdx) => (
+                                <div
+                                  key={pIdx}
+                                  className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end border border-gray-100 rounded-md p-3"
+                                >
+                                  <div className="md:col-span-3">
+                                    <div className="text-xs text-gray-600 mb-1">Payment #{pIdx + 1}</div>
+                                    <input
+                                      type="date"
+                                      value={p.paidAt}
+                                      onChange={(e) =>
+                                        updateInvestorPayment(pi.investorId, pIdx, { paidAt: e.target.value })
+                                      }
+                                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                                    />
+                                  </div>
+                                  <div className="md:col-span-7">
+                                    <div className="text-xs text-gray-600 mb-1">Amount (USD)</div>
+                                    <input
+                                      type="number"
+                                      step="0.01"
+                                      value={p.amount}
+                                      onChange={(e) =>
+                                        updateInvestorPayment(pi.investorId, pIdx, { amount: e.target.value })
+                                      }
+                                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
+                                    />
+                                  </div>
+                                  <div className="md:col-span-2 flex md:justify-end">
+                                    <button
+                                      type="button"
+                                      onClick={() => removeInvestorPayment(pi.investorId, pIdx)}
+                                      className="px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors font-medium"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                </div>
+                              ))
                             )}
-                          </div>
-                          <div className="md:col-span-5">
-                            <label className="block text-xs text-gray-600 mb-1">
-                              Investment Amount (USD)
-                            </label>
-                            <input
-                              type="number"
-                              step="0.01"
-                              value={pi.investmentAmount}
-                              onChange={(e) => {
-                                const next = [...projectInvestors]
-                                next[idx] = { ...next[idx], investmentAmount: e.target.value }
-                                setProjectInvestors(next)
-                              }}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                            />
-                          </div>
-                          <div className="md:col-span-2 flex md:justify-end">
-                            <button
-                              type="button"
-                              onClick={() => removeInvestorFromProject(pi.investorId)}
-                              className="px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors font-medium"
-                            >
-                              Remove
-                            </button>
+
+                            <div className="flex flex-col sm:flex-row gap-2 sm:justify-between">
+                              <button
+                                type="button"
+                                onClick={() => addInvestorPayment(pi.investorId)}
+                                className="px-4 py-2 bg-brand-navy text-white rounded-md hover:bg-opacity-90 transition-colors font-medium"
+                              >
+                                Add Payment
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => removeInvestorFromProject(pi.investorId)}
+                                className="px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors font-medium"
+                              >
+                                Remove Investor
+                              </button>
+                            </div>
                           </div>
                         </div>
                       )
@@ -839,48 +981,35 @@ export default function AdminProjectsPage() {
                       key={index}
                       className="border border-gray-200 rounded-md p-4 space-y-3"
                     >
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                         <div>
-                          <label className="block text-xs text-gray-600 mb-1">Phase</label>
+                          <label className="block text-xs text-gray-600 mb-1">費用名</label>
                           <input
                             type="text"
-                            value={row.phase}
+                            value={row.name}
                             onChange={(e) => {
                               const next = [...projectExpenses]
-                              next[index] = { ...next[index], phase: e.target.value }
+                              next[index] = { ...next[index], name: e.target.value }
                               setProjectExpenses(next)
                             }}
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-600 mb-1">Category</label>
+                          <label className="block text-xs text-gray-600 mb-1">費用内容</label>
                           <input
                             type="text"
-                            value={row.category}
+                            value={row.content}
                             onChange={(e) => {
                               const next = [...projectExpenses]
-                              next[index] = { ...next[index], category: e.target.value }
+                              next[index] = { ...next[index], content: e.target.value }
                               setProjectExpenses(next)
                             }}
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-600 mb-1">Item</label>
-                          <input
-                            type="text"
-                            value={row.item}
-                            onChange={(e) => {
-                              const next = [...projectExpenses]
-                              next[index] = { ...next[index], item: e.target.value }
-                              setProjectExpenses(next)
-                            }}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-600 mb-1">Amount</label>
+                          <label className="block text-xs text-gray-600 mb-1">金額</label>
                           <input
                             type="number"
                             step="0.01"
@@ -894,45 +1023,18 @@ export default function AdminProjectsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-600 mb-1">Currency</label>
-                          <input
-                            type="text"
-                            value={row.currency}
-                            onChange={(e) => {
-                              const next = [...projectExpenses]
-                              next[index] = { ...next[index], currency: e.target.value }
-                              setProjectExpenses(next)
-                            }}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-600 mb-1">Date</label>
+                          <label className="block text-xs text-gray-600 mb-1">日付</label>
                           <input
                             type="date"
-                            value={row.expenseDate}
+                            value={row.date}
                             onChange={(e) => {
                               const next = [...projectExpenses]
-                              next[index] = { ...next[index], expenseDate: e.target.value }
+                              next[index] = { ...next[index], date: e.target.value }
                               setProjectExpenses(next)
                             }}
                             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
                           />
                         </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs text-gray-600 mb-1">Notes</label>
-                        <textarea
-                          value={row.notes}
-                          onChange={(e) => {
-                            const next = [...projectExpenses]
-                            next[index] = { ...next[index], notes: e.target.value }
-                            setProjectExpenses(next)
-                          }}
-                          rows={2}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                        />
                       </div>
 
                       <div className="flex justify-end">
@@ -1145,46 +1247,30 @@ export default function AdminProjectsPage() {
                 <div className="space-y-6">
                   {/* Upload */}
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-sm font-medium text-brand-navy mb-2">
-                          Upload Image
-                        </label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => setNewImageFile(e.target.files?.[0] || null)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-brand-navy file:text-white hover:file:bg-opacity-90"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-brand-navy mb-2">
-                          Caption
-                        </label>
-                        <input
-                          type="text"
-                          value={newImageCaption}
-                          onChange={(e) => setNewImageCaption(e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-brand-navy mb-2">
-                          Phase
-                        </label>
-                        <input
-                          type="text"
-                          value={newImagePhase}
-                          onChange={(e) => setNewImagePhase(e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-sm font-medium text-brand-navy mb-2">
+                        Upload Images (multiple)
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) =>
+                          setNewImageFiles(Array.from(e.target.files || []))
+                        }
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-brand-navy file:text-white hover:file:bg-opacity-90"
+                      />
+                      {newImageFiles.length > 0 && (
+                        <div className="text-xs text-gray-500 mt-2">
+                          {newImageFiles.length} file(s) selected
+                        </div>
+                      )}
                     </div>
                     <div className="mt-4">
                       <button
                         type="button"
-                        onClick={uploadProjectImage}
-                        disabled={!newImageFile}
+                        onClick={uploadProjectImages}
+                        disabled={newImageFiles.length === 0}
                         className="px-6 py-2 bg-brand-navy text-white rounded-md hover:bg-opacity-90 disabled:opacity-50 transition-colors font-medium"
                       >
                         Upload
@@ -1196,94 +1282,57 @@ export default function AdminProjectsPage() {
                   {projectImages.length === 0 ? (
                     <p className="text-sm text-gray-500">No additional images yet.</p>
                   ) : (
-                    <div className="space-y-4">
-                      {projectImages.map((img, idx) => (
-                        <div
-                          key={img.id}
-                          className="border border-gray-200 rounded-lg p-4"
-                        >
-                          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
-                            <div className="md:col-span-3">
+                    <div className="space-y-3">
+                      {reorderingImages && (
+                        <div className="text-sm text-gray-500">
+                          Reordering...
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {projectImages.map((img, idx) => (
+                          <div
+                            key={img.id}
+                            draggable={!reorderingImages}
+                            onDragStart={() => setDragIndex(idx)}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={() => {
+                              if (dragIndex === null || dragIndex === idx) return
+                              const next = [...projectImages]
+                              const [moved] = next.splice(dragIndex, 1)
+                              next.splice(idx, 0, moved)
+                              setDragIndex(null)
+                              reorderProjectImages(next)
+                            }}
+                            className="border border-gray-200 rounded-lg overflow-hidden bg-white"
+                          >
+                            <div className="relative">
                               <img
                                 src={img.imagePath}
-                                alt={img.caption || 'Project image'}
-                                className="w-full h-40 object-cover rounded-md border"
+                                alt="Project image"
+                                className="w-full h-32 object-cover"
                               />
-                            </div>
-                            <div className="md:col-span-7 space-y-3">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <div>
-                                  <label className="block text-xs text-gray-600 mb-1">
-                                    Caption
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={img.caption || ''}
-                                    onChange={(e) => {
-                                      const next = [...projectImages]
-                                      next[idx] = { ...next[idx], caption: e.target.value }
-                                      setProjectImages(next)
-                                    }}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-xs text-gray-600 mb-1">
-                                    Phase
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={img.phase || ''}
-                                    onChange={(e) => {
-                                      const next = [...projectImages]
-                                      next[idx] = { ...next[idx], phase: e.target.value }
-                                      setProjectImages(next)
-                                    }}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-xs text-gray-600 mb-1">
-                                    Display Order
-                                  </label>
-                                  <input
-                                    type="number"
-                                    value={img.displayOrder}
-                                    onChange={(e) => {
-                                      const next = [...projectImages]
-                                      next[idx] = {
-                                        ...next[idx],
-                                        displayOrder: Number(e.target.value),
-                                      }
-                                      setProjectImages(next)
-                                    }}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent"
-                                  />
-                                </div>
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {new Date(img.uploadedAt).toLocaleString()}
+                              <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                                Drag
                               </div>
                             </div>
-                            <div className="md:col-span-2 flex md:flex-col gap-2 md:items-end">
-                              <button
-                                type="button"
-                                onClick={() => updateProjectImageMeta(img)}
-                                className="px-4 py-2 bg-blue-50 text-brand-navy rounded-md hover:bg-blue-100 transition-colors font-medium"
-                              >
-                                Save
-                              </button>
+                            <div className="p-2 flex items-center justify-between gap-2">
+                              <div className="text-xs text-gray-500 truncate">
+                                #{idx + 1}
+                              </div>
                               <button
                                 type="button"
                                 onClick={() => deleteProjectImage(img.id)}
-                                className="px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors font-medium"
+                                className="text-xs px-2 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
                               >
                                 Delete
                               </button>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Drag and drop images to change the order.
+                      </p>
                     </div>
                   )}
                 </div>

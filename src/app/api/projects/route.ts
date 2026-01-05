@@ -10,6 +10,14 @@ type InvestorAssignmentInput = {
   investmentAmount?: number | null
 }
 
+type InvestorPaymentsInput = {
+  investorId: string
+  payments: Array<{
+    amount: number
+    paidAt?: string | null
+  }>
+}
+
 type ProjectExpenseInput = {
   phase?: string | null
   category?: string | null
@@ -99,6 +107,7 @@ export async function POST(request: NextRequest) {
     const progressPercent = formData.get('progressPercent') as string
     const thumbnailFile = formData.get('thumbnail') as File | null
     const investorsJson = formData.get('investorsJson') as string | null
+    const investorPaymentsJson = formData.get('investorPaymentsJson') as string | null
     const expensesJson = formData.get('expensesJson') as string | null
 
     if (!title || !projectType) {
@@ -127,6 +136,7 @@ export async function POST(request: NextRequest) {
     }
 
     const parsedInvestors = safeJsonParse<InvestorAssignmentInput[]>(investorsJson)
+    const parsedInvestorPayments = safeJsonParse<InvestorPaymentsInput[]>(investorPaymentsJson)
     const parsedExpenses = safeJsonParse<ProjectExpenseInput[]>(expensesJson)
 
     const project = await prisma.$transaction(async (tx) => {
@@ -151,18 +161,69 @@ export async function POST(request: NextRequest) {
       })
 
       const assignments = Array.isArray(parsedInvestors) ? parsedInvestors : []
-      if (assignments.length > 0) {
+      const paymentGroups = Array.isArray(parsedInvestorPayments) ? parsedInvestorPayments : []
+
+      const investorIds = new Set<string>()
+      for (const a of assignments) {
+        if (a?.investorId) investorIds.add(a.investorId)
+      }
+      for (const pg of paymentGroups) {
+        if (pg?.investorId) investorIds.add(pg.investorId)
+      }
+
+      const uniqueInvestorIds = Array.from(investorIds)
+      if (uniqueInvestorIds.length > 0) {
         await tx.projectInvestor.createMany({
-          data: assignments
-            .filter((a) => typeof a?.investorId === 'string' && a.investorId)
-            .map((a) => ({
-              projectId: created.id,
-              investorId: a.investorId,
-              investmentAmount:
-                typeof a.investmentAmount === 'number' ? a.investmentAmount : null,
-            })),
+          data: uniqueInvestorIds.map((investorId) => ({
+            projectId: created.id,
+            investorId,
+            investmentAmount: null,
+          })),
           skipDuplicates: true,
         })
+      }
+
+      // Investor payments (multiple installments)
+      if (paymentGroups.length > 0) {
+        const rows: Array<{
+          projectId: string
+          investorId: string
+          installmentNo: number
+          amount: number
+          paidAt: Date | null
+        }> = []
+
+        for (const group of paymentGroups) {
+          if (!group?.investorId) continue
+          const payments = Array.isArray(group.payments) ? group.payments : []
+          payments.forEach((p, idx) => {
+            if (typeof p?.amount !== 'number') return
+            rows.push({
+              projectId: created.id,
+              investorId: group.investorId,
+              installmentNo: idx + 1,
+              amount: p.amount,
+              paidAt: p.paidAt ? new Date(p.paidAt) : null,
+            })
+          })
+        }
+        if (rows.length > 0) {
+          await tx.projectInvestment.createMany({ data: rows })
+        }
+      } else {
+        // Backward compatibility: investmentAmount as single installment
+        const legacyRows = assignments
+          .filter((a) => a?.investorId && typeof a.investmentAmount === 'number')
+          .map((a) => ({
+            projectId: created.id,
+            investorId: a.investorId,
+            installmentNo: 1,
+            amount: a.investmentAmount as number,
+            paidAt: null,
+          }))
+        if (legacyRows.length > 0) {
+          await tx.projectInvestment.createMany({ data: legacyRows })
+        }
       }
 
       const expenses = Array.isArray(parsedExpenses) ? parsedExpenses : []
@@ -192,6 +253,7 @@ export async function POST(request: NextRequest) {
             include: { investor: true },
           },
           expenses: true,
+          investments: true,
         },
       })
     })
