@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
               category: e.category || null,
               item: e.item,
               amount: e.amount,
-              currency: e.currency || 'USD',
+              currency: e.currency || 'LKR',
               expenseDate: e.expenseDate ? new Date(e.expenseDate) : null,
               notes: e.notes || null,
             })),

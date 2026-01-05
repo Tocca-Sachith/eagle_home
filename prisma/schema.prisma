@@ -213,7 +213,7 @@ model ProjectExpense {
   // Short label for the expense item
   item        String
   amount      Float
-  currency    String   @default("USD")
+  currency    String   @default("LKR")
   expenseDate DateTime?
   notes       String?  @db.Text
 

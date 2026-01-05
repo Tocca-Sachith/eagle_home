@@ -142,6 +142,24 @@ export default function AdminProjectsPage() {
   const [submitting, setSubmitting] = useState(false)
   const [dragIndex, setDragIndex] = useState<number | null>(null)
 
+  const formatCurrency = (amount: number | null) => {
+    if (!amount) return '-'
+    return new Intl.NumberFormat('en-LK', {
+      style: 'currency',
+      currency: 'LKR',
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  const formatCurrencyFromString = (amount: string) => {
+    const num = amount ? Number(amount) : 0
+    return new Intl.NumberFormat('en-LK', {
+      style: 'currency',
+      currency: 'LKR',
+      maximumFractionDigits: 0,
+    }).format(num)
+  }
+
   useEffect(() => {
     fetchProjects()
     fetchCustomers()
@@ -378,7 +396,7 @@ export default function AdminProjectsPage() {
               category: null,
               item: e.content || '',
               amount: Number(e.amount),
-              currency: 'USD',
+              currency: 'LKR',
               expenseDate: e.date || null,
               notes: null,
             }))
@@ -504,10 +522,18 @@ export default function AdminProjectsPage() {
     setProjectExpenses(projectExpenses.filter((_, i) => i !== index))
   }
 
-  const uploadProjectImages = async () => {
-    if (!editingProject?.id || newImageFiles.length === 0) return
+  // Images are uploaded immediately when selected (see handleSelectImages)
+
+  const handleSelectImages = async (files: FileList | null) => {
+    const list = Array.from(files || [])
+    if (list.length === 0) return
+    // upload immediately without refreshing the page
     try {
-      for (const file of newImageFiles) {
+      if (!editingProject?.id) return
+      setNewImageFiles(list)
+      const createdImages: ProjectImage[] = []
+
+      for (const file of list) {
         const fd = new FormData()
         fd.append('file', file)
         const res = await fetch(`/api/projects/${editingProject.id}/images`, {
@@ -519,12 +545,19 @@ export default function AdminProjectsPage() {
           alert(err.error || 'Failed to upload image')
           return
         }
+        const data = await res.json().catch(() => null)
+        if (data?.image) createdImages.push(data.image as ProjectImage)
       }
-      setNewImageFiles([])
-      await handleEdit(editingProject)
+
+      const merged = [...projectImages, ...createdImages]
+        .slice()
+        .sort((a, b) => a.displayOrder - b.displayOrder)
+      setProjectImages(merged)
     } catch (error) {
       console.error('Error uploading images:', error)
       alert('Failed to upload images')
+    } finally {
+      setNewImageFiles([])
     }
   }
 
@@ -548,7 +581,6 @@ export default function AdminProjectsPage() {
           })
         )
       )
-      await handleEdit(editingProject)
     } catch (error) {
       console.error('Error reordering images:', error)
       alert('Failed to reorder images')
@@ -569,7 +601,7 @@ export default function AdminProjectsPage() {
         alert(err.error || 'Failed to delete image')
         return
       }
-      await handleEdit(editingProject)
+      setProjectImages(projectImages.filter((img) => img.id !== imageId))
     } catch (error) {
       console.error('Error deleting image:', error)
       alert('Failed to delete image')
@@ -598,14 +630,6 @@ export default function AdminProjectsPage() {
       console.error('Error updating image:', error)
       alert('Failed to update image')
     }
-  }
-
-  const formatCurrency = (amount: number | null) => {
-    if (!amount) return '-'
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount)
   }
 
   const formatDate = (date: string | null) => {
@@ -876,7 +900,7 @@ export default function AdminProjectsPage() {
                               {inv ? `${inv.fullName} (${inv.investorNumber})` : pi.investorId}
                             </div>
                             <div className="text-sm font-semibold text-brand-navy">
-                              Total: {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(total)}
+                              Total: {formatCurrencyFromString(String(total))}
                             </div>
                           </div>
 
@@ -904,7 +928,7 @@ export default function AdminProjectsPage() {
                                     />
                                   </div>
                                   <div className="md:col-span-7">
-                                    <div className="text-xs text-gray-600 mb-1">Amount (USD)</div>
+                                    <div className="text-xs text-gray-600 mb-1">Amount (LKR)</div>
                                     <input
                                       type="number"
                                       step="0.01"
@@ -983,7 +1007,7 @@ export default function AdminProjectsPage() {
                     >
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                         <div>
-                          <label className="block text-xs text-gray-600 mb-1">費用名</label>
+                          <label className="block text-xs text-gray-600 mb-1">Cost name</label>
                           <input
                             type="text"
                             value={row.name}
@@ -996,7 +1020,7 @@ export default function AdminProjectsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-600 mb-1">費用内容</label>
+                          <label className="block text-xs text-gray-600 mb-1">Cost details</label>
                           <input
                             type="text"
                             value={row.content}
@@ -1009,7 +1033,7 @@ export default function AdminProjectsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-600 mb-1">金額</label>
+                          <label className="block text-xs text-gray-600 mb-1">Amount (LKR)</label>
                           <input
                             type="number"
                             step="0.01"
@@ -1023,7 +1047,7 @@ export default function AdminProjectsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-600 mb-1">日付</label>
+                          <label className="block text-xs text-gray-600 mb-1">Date</label>
                           <input
                             type="date"
                             value={row.date}
@@ -1255,9 +1279,12 @@ export default function AdminProjectsPage() {
                         type="file"
                         accept="image/*"
                         multiple
-                        onChange={(e) =>
-                          setNewImageFiles(Array.from(e.target.files || []))
-                        }
+                        onChange={async (e) => {
+                          // Auto-upload immediately (no button) and keep form state intact
+                          await handleSelectImages(e.target.files)
+                          // allow re-selecting the same file(s)
+                          e.currentTarget.value = ''
+                        }}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-gold focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-brand-navy file:text-white hover:file:bg-opacity-90"
                       />
                       {newImageFiles.length > 0 && (
@@ -1265,16 +1292,6 @@ export default function AdminProjectsPage() {
                           {newImageFiles.length} file(s) selected
                         </div>
                       )}
-                    </div>
-                    <div className="mt-4">
-                      <button
-                        type="button"
-                        onClick={uploadProjectImages}
-                        disabled={newImageFiles.length === 0}
-                        className="px-6 py-2 bg-brand-navy text-white rounded-md hover:bg-opacity-90 disabled:opacity-50 transition-colors font-medium"
-                      >
-                        Upload
-                      </button>
                     </div>
                   </div>
 
