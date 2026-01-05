@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 type ProjectImage = {
@@ -42,9 +42,10 @@ function formatDate(value: string | null) {
 export default function ProjectDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const { t } = useLanguage();
+  const { id } = React.use(params);
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +55,7 @@ export default function ProjectDetailPage({
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(`/api/projects/${params.id}`, {
+        const res = await fetch(`/api/projects/${id}`, {
           cache: 'no-store',
           headers: { 'Cache-Control': 'no-cache' },
         });
@@ -91,7 +92,7 @@ export default function ProjectDetailPage({
     };
 
     fetchProject();
-  }, [params.id]);
+  }, [id]);
 
   const heroImage = useMemo(() => {
     if (!project) return null;
